@@ -2,7 +2,7 @@
 -- Ousainou Manneh & Thony Price  - Cdate2
 
 module F2 where
-
+  
 -- 2.   Molekylära sekvenser
 -- 2.1  Skapa datatypen MolSeq för molekylära sekvenser som anger 
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller 
@@ -24,5 +24,22 @@ string2seq n (x:xs)
   | otherwise = string2seq n xs
   where list = ["A", "C", "G", "T"]
 
--- ghci klarar av att kompilera koden nu. 
--- Ej testat med hjälpfilen mobio.hs än
+-- Behöver uppdateras eftersom ACGT kan finnas i proteiner också:
+-- Idé kolla istället om en _annan_ bokstav än dessa finns med, 
+-- isf är det definitivt ett protein
+
+-- 2.3  Skriv tre funktioner seqName, seqSequence, seqLength som tar en
+--      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska 
+--      inte behöva duplicera din kod beroende på om det är DNA eller protein!
+
+-- seqName :: Molseq -> [Char] -> String
+-- -- Returnerar namnet på sekvensen
+-- seqName n s = ng
+-- 
+-- seqSequence :: Molseq -> [Char]
+-- -- Retunerar sekvensen
+-- seqSequence n s = s
+-- 
+-- seqLength :: Molseq -> Int
+-- -- Retunerar sekvensens längd OBS! Kan snabbas upp, length = långsam
+-- seqLength n s = length s
