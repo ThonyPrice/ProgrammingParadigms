@@ -8,7 +8,7 @@ module F2 where
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller 
 --      protein som sekvensen beskriver
 
-data Molseq = Molseq Char Char DNA | Char Char Protein deriving (Show)
+data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Show)
 
 -- 2.2  Skriv en funktion string2seq med typsignaturen 
 --      String -> String -> MolSeq.Dess första argument är ett namn och 
@@ -18,9 +18,11 @@ data Molseq = Molseq Char Char DNA | Char Char Protein deriving (Show)
 
 string2seq :: String -> String -> Molseq
 -- Första argumentet är ett namn, andra är en sekvens
-string2seq n []   = Molseq (n (x:xs) Protein)
-string2seq n x    = n (x:xs)
-  | x `elem` ["A", "C", "G", "T"] = Molseq (n (x:xs) DNA)
-  | otherwise = string2seq(n xs)
+string2seq n []   = Protein n []
+string2seq n (x:xs)
+  | [x] `elem` list = DNA n (x : xs)
+  | otherwise = string2seq n xs
+  where list = ["A", "C", "G", "T"]
 
--- Funkar inte att loada i ghci, felet verkar ligga i rad 11 när datatypen defineras
+-- ghci klarar av att kompilera koden nu. 
+-- Ej testat med hjälpfilen mobio.hs än
