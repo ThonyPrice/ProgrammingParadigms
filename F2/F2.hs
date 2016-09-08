@@ -32,9 +32,9 @@ string2seq n (x:xs)
 --      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska 
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
--- seqName :: Molseq -> [Char] -> String
--- -- Returnerar namnet på sekvensen
--- seqName n s = ng
+seqName :: Molseq -> IO()
+seqName (DNA a b) = putStrLn b
+seqName (Protein a b) = putStrLn b
 -- 
 -- seqSequence :: Molseq -> [Char]
 -- -- Retunerar sekvensen
