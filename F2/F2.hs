@@ -28,8 +28,8 @@ string2seq n sekvens
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
 seqName :: Molseq -> String
-seqName (DNA a _) = a 
-seqName (Protein a _) = a
+seqName head molseq( a _ ) = a 
+seqName head molseq( a _ ) = a
 --
 -- seqSequence :: Molseq -> [Char]
 -- -- Retunerar sekvensen
