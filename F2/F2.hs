@@ -23,16 +23,13 @@ string2seq n sekvens
   | otherwise = DNA n sekvens   
   where x = [x | x <- sekvens, x `elem` "AGCT"]
 
-
-
-
 -- 2.3  Skriv tre funktioner seqName, seqSequence, seqLength som tar en
 --      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
 seqName :: Molseq -> String
-seqName (DNA a b) = b
-seqName (Protein a b) = b
+seqName (DNA a _) = a 
+seqName (Protein a _) = a
 --
 -- seqSequence :: Molseq -> [Char]
 -- -- Retunerar sekvensen
