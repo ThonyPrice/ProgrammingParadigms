@@ -18,11 +18,10 @@ data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Show)
 
 string2seq :: String -> String -> Molseq
 -- Första argumentet är ett namn, andra är en sekvens
-string2seq n []   = Protein n [] 
-string2seq n (x:xs)
-  | [x] `elem` letters = string2seq n xs  
-  | otherwise = DNA n xs   
-  where letters = ["A", "C", "G", "T"]
+string2seq n sekvens
+  | length sekvens > length x = Protein n sekvens
+  | otherwise = DNA n sekvens   
+  where x = [x | x <- sekvens, x `elem` "AGCT"]
 
 
 
