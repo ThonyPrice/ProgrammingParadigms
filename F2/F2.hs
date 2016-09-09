@@ -20,12 +20,10 @@ string2seq :: String -> String -> Molseq
 -- Första argumentet är ett namn, andra är en sekvens
 string2seq n []   = Protein n [] 
 string2seq n (x:xs)
-<<<<<<< HEAD
-  | [x] `elem` letters = string2seq n (xs)  
-  | otherwise = DNA n xs
+  | [x] `elem` letters = string2seq n xs  
+  | otherwise = DNA n xs   
   where letters = ["A", "C", "G", "T"]
 
--- we are the best
 
 
 
@@ -33,9 +31,9 @@ string2seq n (x:xs)
 --      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
-seqName :: Molseq -> IO()
-seqName (DNA a b) = putStrLn b
-seqName (Protein a b) = putStrLn b
+seqName :: Molseq -> String
+seqName (DNA a b) = b
+seqName (Protein a b) = b
 --
 -- seqSequence :: Molseq -> [Char]
 -- -- Retunerar sekvensen
