@@ -8,7 +8,7 @@ module F2 where
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller
 --      protein som sekvensen beskriver
 
-data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Show)
+data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Read, Show)
 
 -- 2.2  Skriv en funktion string2seq med typsignaturen
 --      String -> String -> MolSeq.Dess första argument är ett namn och
@@ -27,14 +27,25 @@ string2seq n sekvens
 --      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
+-- Skapa Molseq objekt att testa funktionerna under med
+create = string2seq "namnet-DNA" "AGGCATCATCGCAT"
+create2 = string2seq "namnet-Protein" "AGGCXKKKQATCATCGCAT"
+
+-- Egentligen ska det finnas ett sätt att göra detta utan kodrepetering,
+-- gäller även funktionerna seqSequence och seqLength också
 seqName :: Molseq -> String
-seqName head molseq( a _ ) = a 
-seqName head molseq( a _ ) = a
---
--- seqSequence :: Molseq -> [Char]
--- -- Retunerar sekvensen
--- seqSequence n s = s
---
--- seqLength :: Molseq -> Int
--- -- Retunerar sekvensens längd OBS! Kan snabbas upp, length = långsam
--- seqLength n s = length s
+-- Retunerar namnet 
+seqName (DNA n _ ) = n
+seqName (Protein n _ ) = n
+
+seqSequence :: Molseq -> [Char]
+-- Retunerar sekvensen
+seqSequence (DNA _ s ) = s
+seqSequence (Protein _ s ) = s
+
+seqLength :: Molseq -> Int
+-- Retunerar sekvensens längd. OBS! Kan snabbas upp, length = långsam
+seqLength (DNA _ s ) = length s
+seqLength (Protein _ s ) = length s
+
+
