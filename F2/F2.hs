@@ -8,8 +8,14 @@ module F2 where
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller
 --      protein som sekvensen beskriver
 
-data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Read, Show)
+data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Read, Show)
 
+-- Instance används i uppg. 2.4, den låter oss att kolla om två Molseq är av samma typ
+instance Molseq where
+  DNA == DNA = True
+  Protein == Protein = True
+  _ == _ = False
+  
 -- 2.2  Skriv en funktion string2seq med typsignaturen
 --      String -> String -> MolSeq.Dess första argument är ett namn och
 --      andra argument är en sekvens. Denna funktion ska automatiskt skilja
@@ -47,5 +53,20 @@ seqLength :: Molseq -> Int
 -- Retunerar sekvensens längd. OBS! Kan snabbas upp, length = långsam
 seqLength (DNA _ s ) = length s
 seqLength (Protein _ s ) = length s
+
+-- 2.4  Implementera seqDistance :: MolSeq -> MolSeq -> Double som jämför två 
+--      DNA-sekvenser eller två proteinsekvenser och returnerar deras evolutionära avstånd.
+--      Om man försöker jämföra DNA med protein ska det signaleras ett fel med hjälp av 
+--      funktionen error. Du kan anta att de två sekvenserna har samma längd, 
+--      och behöver inte hantera fallet att de har olika längd.
+
+seqDistance :: Molseq -> Molseq -> Double
+seqDistance x y = case x y of
+  x == x -> 1.0
+  y == y -> 2.3
+
+
+
+
 
 
