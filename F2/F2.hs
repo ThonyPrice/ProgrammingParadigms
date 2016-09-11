@@ -10,11 +10,6 @@ module F2 where
 
 data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Read, Show)
 
--- Instance används i uppg. 2.4, den låter oss att kolla om två Molseq är av samma typ
-instance Molseq where
-  DNA == DNA = True
-  Protein == Protein = True
-  _ == _ = False
   
 -- 2.2  Skriv en funktion string2seq med typsignaturen
 --      String -> String -> MolSeq.Dess första argument är ett namn och
@@ -35,7 +30,7 @@ string2seq n sekvens
 
 -- Skapa Molseq objekt att testa funktionerna under med
 create = string2seq "namnet-DNA" "AGGCATCATCGCAT"
-create2 = string2seq "namnet-Protein" "AGGCXKKKQATCATCGCAT"
+create2 = string2seq "namnet-DNA" "AGGCATCATCGCATACGCAT"
 
 -- Egentligen ska det finnas ett sätt att göra detta utan kodrepetering,
 -- gäller även funktionerna seqSequence och seqLength också
@@ -61,11 +56,18 @@ seqLength (Protein _ s ) = length s
 --      och behöver inte hantera fallet att de har olika längd.
 
 seqDistance :: Molseq -> Molseq -> Double
-seqDistance x y = case x y of
-  x == x -> 1.0
-  y == y -> 2.3
+seqDistance x y
+  | alfa > 0.74 = (-0.75)*log(1-((4*3.3)/3)) 
+  | otherwise = (-0.75)*log(1-((4*alfa)/3)) 
+  where alfa = hamming (seqSequence x) (seqSequence y) (seqLength x)
 
 
+hamming :: [Char] -> [Char] -> Int -> Double
+-- När båda sekvenserna är jämförda, retunera täljare över nämnare
+hamming [] [] n = 0.0
+hamming (x:xs) (y:ys) n
+  | x == y = fromIntegral(1) / fromIntegral(n) + hamming xs ys n
+  | otherwise = hamming xs ys n
 
 
 
