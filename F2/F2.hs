@@ -76,3 +76,18 @@ hamming (x:xs) (y:ys) n
 --      beskrivningen ovan), det är en profil för DNA eller protein, hur många 
 --      sekvenser profilen är byggd ifrån, och ett namn på profilen.
 
+-- 3.2  Skriv en funktion molseqs2profile :: String -> [MolSeq] -> Profile som 
+--      returnerar en profil från de givna sekvenserna med den givna strängen som 
+--      namn. Som hjälp för att skapa profil-matrisen har du koden i figur 2. 
+--      Vid redovisning ska du kunna förklara exakt hur den fungerar, speciellt 
+--      raderna (i)-(iv). Skriv gärna kommentarer direkt in i koden inför redovisningen, 
+--      för så här kryptiskt ska det ju inte se ut!
+
+-- 2.3  Skriv en funktion profileName :: Profile -> String som returnerar en profils
+--      namn, och en funktion profileFrequency :: Profile -> Int -> Char -> Double 
+--      som tar en profil p, en heltalsposition i, och ett tecken c, och returnerar 
+--      den relativa frekvensen för tec- ken c på position i i profilen p (med andra ord, 
+--      värdet på elementet mc,i i profilens matris M ).
+
+-- 3.4  Skriv profileDistance :: Profile -> Profile -> Double. Avståndet mellan två 
+--      profiler M och M′ mäts med hjälp av funktionen d(M,M′) beskriven ovan.
