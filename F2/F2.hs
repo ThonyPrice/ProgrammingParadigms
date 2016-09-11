@@ -3,12 +3,13 @@
 
 module F2 where
 
+
 -- 2.   Molekylära sekvenser
 -- 2.1  Skapa datatypen MolSeq för molekylära sekvenser som anger
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller
 --      protein som sekvensen beskriver
 
-data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Read, Show)
+data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Ord, Read, Show)
 
   
 -- 2.2  Skriv en funktion string2seq med typsignaturen
@@ -69,6 +70,9 @@ hamming (x:xs) (y:ys) n
   | x == y = fromIntegral(1) / fromIntegral(n) + hamming xs ys n
   | otherwise = hamming xs ys n
 
-
-
+-- 3.   Profiler och sekvenser
+-- 3.1  Skapa en datatyp Profile för att lagra profiler. Datatypen ska lagra 
+--      information om den profil som lagras med hjälp av matrisen M (enligt 
+--      beskrivningen ovan), det är en profil för DNA eller protein, hur många 
+--      sekvenser profilen är byggd ifrån, och ett namn på profilen.
 
