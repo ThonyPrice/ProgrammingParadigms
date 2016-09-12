@@ -2,6 +2,7 @@
 -- Ousainou Manneh & Thony Price  - Cdate2
 
 module F2 where
+import Data.List 
 
 -- 2.   Molekylära sekvenser
 -- 2.1  Skapa datatypen MolSeq för molekylära sekvenser som anger
@@ -9,6 +10,11 @@ module F2 where
 --      protein som sekvensen beskriver
 
 data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Ord, Read, Show)
+data SType = SDNA | SProtein deriving (Eq, Ord, Read, Show)
+
+seqType::Molseq->SType
+seqType (DNA _ _) = SDNA
+seqType (Protein _ _) = SProtein
 
 -- 2.2  Skriv en funktion string2seq med typsignaturen
 --      String -> String -> MolSeq.Dess första argument är ett namn och
@@ -79,7 +85,24 @@ hamming (x:xs) (y:ys) n
 --      beskrivningen ovan), det är en profil för DNA eller protein, hur många 
 --      sekvenser profilen är byggd ifrån, och ett namn på profilen.
 
+nucleotides = "ACGT"
+aminoacids = sort "ARNDCEQGHILKMFPSTWYVX"
 
+makeProfileMatrix :: [Molseq] -> [[(Char,Double)]]
+makeProfileMatrix [] = error "Empty sequence list"
+makeProfileMatrix sl = res
+  where 
+    t = seqType (head sl)
+    defaults = 
+      if (t == SDNA) then
+        zip nucleotides (replicate (length nucleotides) 0) -- Rad (i)
+      else 
+        zip aminoacids (replicate (length aminoacids) 0)   -- Rad (ii)
+    strs = map seqSequence sl                              -- Rad (iii)
+    tmp1 = map (map (\x -> ((head x), fromIntegral(length x))) . group . sort)
+               (transpose strs)                            -- Rad (iv)
+    equalFst a b = (fst a) == (fst b)
+    res = map sort (map (\l -> unionBy equalFst l defaults) tmp1)
 
 -- 3.2  Skriv en funktion molseqs2profile :: String -> [MolSeq] -> Profile som 
 --      returnerar en profil från de givna sekvenserna med den givna strängen som 
