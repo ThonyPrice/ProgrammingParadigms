@@ -125,7 +125,26 @@ molseqs2profile n [m] = Profile (n) (seqType([m]!!0)) (makeProfileMatrix [m])
 profileName::Profile -> String
 profileName (Profile s _ _) = s
 
--- profileFrequency::Profile -> Int -> Char -> Double
+profileFrequency::Profile -> Int -> Char -> Double
+profileFrequency (Profile _ _ m) i c = match m i c
+
+match::[[(Char,Double)]]->Int->Char->Double
+match m i c
+  | c == 'A' = snd((m!!i)!!0)
+  | c == 'C' = snd((m!!i)!!1)
+  | c == 'G' = snd((m!!i)!!2)
+  | c == 'T' = snd((m!!i)!!3)
+    
+-- Egenkonstruerade testfall
+
+a = string2seq "A" "ACATAA"
+b = string2seq "B" "AAGTCA"
+c = string2seq "C" "ACGTGC"
+d = string2seq "D" "AAGTTC"
+e = string2seq "E" "ACGTAA"
+f = [a,b,c,d,e]
+g = makeProfileMatrix f
+h = Profile "Name-test" SDNA g
 
 -- 3.4  Skriv profileDistance :: Profile -> Profile -> Double. Avståndet mellan två 
 --      profiler M och M′ mäts med hjälp av funktionen d(M,M′) beskriven ovan.
