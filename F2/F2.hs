@@ -30,8 +30,8 @@ string2seq n sekvens
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
 -- Skapa Molseq objekt att testa funktionerna under med
-create = string2seq "namnet-DNA" "AGGCATCATCGCAT"
-create2 = string2seq "namnet-DNA" "AGGCATCATCGCATACGCAT"
+create = string2seq "namnet-DNA" "GAGCTTTT"
+create2 = string2seq "namnet-DNA2" "GAGCGGGG"
 
 -- Egentligen ska det finnas ett sätt att göra detta utan kodrepetering,
 -- gäller även funktionerna seqSequence och seqLength också
@@ -58,10 +58,22 @@ seqLength (Protein _ s ) = length s
 
 seqDistance :: Molseq -> Molseq -> Double
 seqDistance x y
-  | alfa > 0.74 = (-0.75)*log(1-((4*3.3)/3)) 
-  | otherwise = (-0.75)*log(1-((4*alfa)/3)) 
+  | isDNA x = isDNA y = x y
+    | alfa > 0.74 = 3.3 
+    | otherwise = (-0.75)*log(1-((4*alfa)/3)) 
+  | isProtein x == isProtein y = x y 
+    | alfa >= 0.94 = 3.7 
+    | otherwise = (-0.95)*log(1-((20*alfa)/19)) 
+  otherwise = "Error"
   where alfa = hamming (seqSequence x) (seqSequence y) (seqLength x)
 
+isDNA :: Molseq -> Bool
+isDNA (DNA _ _) = True
+isDNA (Protein _ _) = False
+
+isProtein :: Molseq -> Bool
+isDNA (Protein _ _) = True
+isDNA (DNA _ _) = False
 
 hamming :: [Char] -> [Char] -> Int -> Double
 -- När båda sekvenserna är jämförda, retunera täljare över nämnare
