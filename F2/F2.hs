@@ -55,25 +55,16 @@ seqLength (Protein _ s ) = length s
 --      och behöver inte hantera fallet att de har olika längd.
 
 seqDistance :: Molseq -> Molseq -> Double
-seqDistance (DNA _ _) (DNA _ _)
-  | alfaD > 0.74 = 3.3 
-  | otherwise = (-0.75)*log(1-((4*alfaD)/3)) 
-  where alfaD = hamming (seqSequence (DNA _ _)) (seqSequence (DNA _ _)) (seqLength (DNA _ _))
-seqDistance (Protein _ _) (Protein _ _)
+seqDistance x@(DNA _ _) y@(DNA _ _)
+  | alfa > 0.74 = 3.3 
+  | otherwise = (-0.75)*log(1-((4*alfa)/3)) 
+  where alfa = hamming (seqSequence x) (seqSequence y) (seqLength y)
+seqDistance x@(Protein _ _) y@(Protein _ _)
   | alfaP >= 0.94 = 3.7 
   | otherwise = (-0.95)*log(1-((20*alfaP)/19)) 
-  where alfaP = hamming (seqSequence (Protein _ _)) (seqSequence (Protein _ _)) (seqLength (Protein _ _))
-seqDistance (DNA _ _) (Protein _ _) = "Error, inte samma typ"
-seqDistance (Protein _ _) (DNA _ _) = "Error, inte samma typ"
-
-  
--- isDNA :: Molseq -> Bool
--- isDNA (DNA _ _) = True
--- isDNA (Protein _ _) = False
--- 
--- isProtein :: Molseq -> Bool
--- isProtein (Protein _ _) = True
--- isProtein (DNA _ _) = False
+  where alfaP = hamming (seqSequence x) (seqSequence y) (seqLength y)
+seqDistance (DNA _ _) (Protein _ _) = 0.0
+seqDistance (Protein _ _) (DNA _ _) = 0.0
 
 hamming :: [Char] -> [Char] -> Int -> Double
 -- När båda sekvenserna är jämförda, retunera täljare över nämnare
@@ -87,6 +78,8 @@ hamming (x:xs) (y:ys) n
 --      information om den profil som lagras med hjälp av matrisen M (enligt 
 --      beskrivningen ovan), det är en profil för DNA eller protein, hur många 
 --      sekvenser profilen är byggd ifrån, och ett namn på profilen.
+
+
 
 -- 3.2  Skriv en funktion molseqs2profile :: String -> [MolSeq] -> Profile som 
 --      returnerar en profil från de givna sekvenserna med den givna strängen som 
