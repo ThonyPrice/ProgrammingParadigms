@@ -122,5 +122,10 @@ molseqs2profile n [m] = Profile (n) (seqType([m]!!0)) (makeProfileMatrix [m])
 --      den relativa frekvensen för tec- ken c på position i i profilen p (med andra ord, 
 --      värdet på elementet mc,i i profilens matris M ).
 
+profileName::Profile -> String
+profileName (Profile s _ _) = s
+
+-- profileFrequency::Profile -> Int -> Char -> Double
+
 -- 3.4  Skriv profileDistance :: Profile -> Profile -> Double. Avståndet mellan två 
 --      profiler M och M′ mäts med hjälp av funktionen d(M,M′) beskriven ovan.
