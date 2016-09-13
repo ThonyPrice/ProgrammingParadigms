@@ -160,3 +160,21 @@ sumProfile m it
   | otherwise = sum ( map (getRow m it) [0..(length m - 1)] ) + sumProfile m (it+1)
   where getRow p i j = snd((p!!j)!!i)
   
+-- 4.   Generell beräkning av avståndsmatriser
+-- 4.1  Implementera typklassen Evol och låt MolSeq och Profile bli instanser av 
+--      Evol. Alla instanser av Evol ska implementera en funktion distance som mäter 
+--      avstånd mellan två Evol, och en funktion name som ger namnet på en Evol. Finns 
+--      det någon mer funktion som man bör implementera i Evol?
+
+class Evol a where
+  name :: a -> String
+  distance:: a -> Double
+  
+instance Evol Molseq where
+  name a = seqName a 
+  distance a = seqDistance a a
+  
+instance Evol Profile where
+  name a = profileName a 
+  distance a = profileDistance a a
+   
