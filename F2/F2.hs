@@ -148,3 +148,15 @@ h = Profile "Name-test" SDNA g
 
 -- 3.4  Skriv profileDistance :: Profile -> Profile -> Double. Avståndet mellan två 
 --      profiler M och M′ mäts med hjälp av funktionen d(M,M′) beskriven ovan.
+
+profileDistance::Profile->Profile->Double
+profileDistance (Profile _ _ (p)) (Profile _ _ (q)) 
+  | length p == 0 = 0
+  | otherwise = sumProfile p 0 - sumProfile q 0
+
+sumProfile::[[(Char,Double)]]->Int->Double 
+sumProfile m it
+  | it == 4 = 0.0
+  | otherwise = sum ( map (getRow m it) [0..(length m - 1)] ) + sumProfile m (it+1)
+  where getRow p i j = snd((p!!j)!!i)
+  
