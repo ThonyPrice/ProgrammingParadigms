@@ -9,10 +9,10 @@ import Data.List
 --      sekvensnamn, sekvens(ensträng), och om det är DNA eller
 --      protein som sekvensen beskriver
 
-data Molseq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Ord, Read, Show)
+data MolSeq = DNA [Char] [Char] | Protein [Char] [Char] deriving (Eq, Ord, Read, Show)
 data SType = SDNA | SProtein deriving (Eq, Ord, Read, Show)
 
-seqType::Molseq->SType
+seqType::MolSeq->SType
 seqType (DNA _ _) = SDNA
 seqType (Protein _ _) = SProtein
 
@@ -22,7 +22,7 @@ seqType (Protein _ _) = SProtein
 --      på DNA och protein, genom att kontrollera om en sekvens bara
 --      innehåller A, C, G, samt T och då utgå ifrån att det är DNA.
 
-string2seq :: String -> String -> Molseq
+string2seq :: String -> String -> MolSeq
 -- Första argumentet är ett namn, andra är en sekvens
 string2seq n sekvens
   | length sekvens > length x = Protein n sekvens
@@ -33,23 +33,23 @@ string2seq n sekvens
 --      MolSeq och returnerar namn, sekvens, respektive sekvenslängd. Du ska
 --      inte behöva duplicera din kod beroende på om det är DNA eller protein!
 
--- Skapa Molseq objekt att testa funktionerna under med
+-- Skapa MolSeq objekt att testa funktionerna under med
 create = string2seq "namnet-DNA" "GAGCTTTT"
 create2 = string2seq "namnet-DNA2" "GAGCGGGG"
 
 -- Egentligen ska det finnas ett sätt att göra detta utan kodrepetering,
 -- gäller även funktionerna seqSequence och seqLength också
-seqName :: Molseq -> String
+seqName :: MolSeq -> String
 -- Retunerar namnet 
 seqName (DNA n _ ) = n
 seqName (Protein n _ ) = n
 
-seqSequence :: Molseq -> [Char]
+seqSequence :: MolSeq -> [Char]
 -- Retunerar sekvensen
 seqSequence (DNA _ s ) = s
 seqSequence (Protein _ s ) = s
 
-seqLength :: Molseq -> Int
+seqLength :: MolSeq -> Int
 -- Retunerar sekvensens längd. OBS! Kan snabbas upp, length = långsam
 seqLength (DNA _ s ) = length s
 seqLength (Protein _ s ) = length s
@@ -60,23 +60,24 @@ seqLength (Protein _ s ) = length s
 --      funktionen error. Du kan anta att de två sekvenserna har samma längd, 
 --      och behöver inte hantera fallet att de har olika längd.
 
-seqDistance :: Molseq -> Molseq -> Double
+seqDistance :: MolSeq -> MolSeq -> Double
 seqDistance x@(DNA _ _) y@(DNA _ _)
-  | alfa > 0.74 = 3.3 
-  | otherwise = (-0.75)*log(1-((4*alfa)/3)) 
+  | (1-alfa) > 0.74 = 3.3 
+  | otherwise = (-0.75)*log(1.0-((4.0*(1-alfa))/3.0)) 
   where alfa = hamming (seqSequence x) (seqSequence y) (seqLength y)
 seqDistance x@(Protein _ _) y@(Protein _ _)
-  | alfaP >= 0.94 = 3.7 
-  | otherwise = (-0.95)*log(1-((20*alfaP)/19)) 
+  | (1-alfaP) >= 0.94 = 3.7 
+  | otherwise = (-0.95)*log(1-((20*(1-alfaP))/19)) 
   where alfaP = hamming (seqSequence x) (seqSequence y) (seqLength y)
-seqDistance (DNA _ _) (Protein _ _) = 0.0
-seqDistance (Protein _ _) (DNA _ _) = 0.0
+seqDistance (DNA _ _) (Protein _ _) = error "Fel..."
+seqDistance (Protein _ _) (DNA _ _) = error "Fel..."
 
 hamming :: [Char] -> [Char] -> Int -> Double
 -- När båda sekvenserna är jämförda, retunera täljare över nämnare
 hamming [] [] n = 0.0
+hamming _ _ 0 = 0.0
 hamming (x:xs) (y:ys) n
-  | x == y = fromIntegral(1) / fromIntegral(n) + hamming xs ys n
+  | x == y = (fromIntegral(1) / fromIntegral(n)) + hamming xs ys n
   | otherwise = hamming xs ys n
 
 -- 3.   Profiler och sekvenser
@@ -85,9 +86,9 @@ hamming (x:xs) (y:ys) n
 --      beskrivningen ovan), det är en profil för DNA eller protein, hur många 
 --      sekvenser profilen är byggd ifrån, och ett namn på profilen.
 
-data Profile = Profile String SType [[(Char,Double)]] deriving (Eq, Ord, Read, Show)
+data Profile = Profile [[(Char,Double)]] SType Int String deriving (Eq, Ord, Read, Show)
 
--- 3.2  Skriv en funktion molseqs2profile :: String -> [MolSeq] -> Profile som 
+-- 3.2  Skriv en funktion MolSeqs2profile :: String -> [MolSeq] -> Profile som 
 --      returnerar en profil från de givna sekvenserna med den givna strängen som 
 --      namn. Som hjälp för att skapa profil-matrisen har du koden i figur 2. 
 --      Vid redovisning ska du kunna förklara exakt hur den fungerar, speciellt 
@@ -97,7 +98,7 @@ data Profile = Profile String SType [[(Char,Double)]] deriving (Eq, Ord, Read, S
 nucleotides = "ACGT"
 aminoacids = sort "ARNDCEQGHILKMFPSTWYVX"
 
-makeProfileMatrix :: [Molseq] -> [[(Char,Double)]]
+makeProfileMatrix :: [MolSeq] -> [[(Char,Double)]]
 makeProfileMatrix [] = error "Empty sequence list"
 makeProfileMatrix sl = res
   where 
@@ -108,13 +109,13 @@ makeProfileMatrix sl = res
       else 
         zip aminoacids (replicate (length aminoacids) 0)   -- Rad (ii)
     strs = map seqSequence sl                              -- Rad (iii)
-    tmp1 = map (map (\x -> ((head x), fromIntegral(length x))) . group . sort)
+    tmp1 = map (map (\x -> ((head x), ((fromIntegral(length x)/fromIntegral(length(sl)))))) . group . sort)
                (transpose strs)                            -- Rad (iv)
     equalFst a b = (fst a) == (fst b)
     res = map sort (map (\l -> unionBy equalFst l defaults) tmp1)
 
-molseqs2profile::String->[Molseq]->Profile
-molseqs2profile n [m] = Profile (n) (seqType([m]!!0)) (makeProfileMatrix [m])
+molseqs2profile::String->[MolSeq]->Profile
+molseqs2profile n m = (Profile (makeProfileMatrix m) (seqType(m!!0)) (length m) (n))  
 
 -- 2.3  Skriv en funktion profileName :: Profile -> String som returnerar en profils
 --      namn, och en funktion profileFrequency :: Profile -> Int -> Char -> Double 
@@ -123,18 +124,23 @@ molseqs2profile n [m] = Profile (n) (seqType([m]!!0)) (makeProfileMatrix [m])
 --      värdet på elementet mc,i i profilens matris M ).
 
 profileName::Profile -> String
-profileName (Profile s _ _) = s
+profileName (Profile _ _ _ s) = s
 
 profileFrequency::Profile -> Int -> Char -> Double
-profileFrequency (Profile _ _ m) i c = match m i c
+profileFrequency (Profile m t r _) i c 
+  | t == SDNA = snd((m!!i)!!pos_D c nucleotides 0)
+  | otherwise = snd((m!!i)!!pos_P c aminoacids 0)
 
-match::[[(Char,Double)]]->Int->Char->Double
-match m i c
-  | c == 'A' = snd((m!!i)!!0)
-  | c == 'C' = snd((m!!i)!!1)
-  | c == 'G' = snd((m!!i)!!2)
-  | c == 'T' = snd((m!!i)!!3)
-    
+pos_P::Char->String->Int->Int
+pos_P c (x:xs) index
+  | c == x = index
+  | otherwise = pos_P c xs (index+1)
+
+pos_D::Char->String->Int->Int
+pos_D c (x:xs) index
+  | c == x = index
+  | otherwise = pos_D c xs (index+1)
+  
 -- Egenkonstruerade testfall
 
 a = string2seq "A" "ACATAA"
@@ -144,21 +150,39 @@ d = string2seq "D" "AAGTTC"
 e = string2seq "E" "ACGTAA"
 f = [a,b,c,d,e]
 g = makeProfileMatrix f
-h = Profile "Name-test" SDNA g
+h = Profile g SDNA 8 "Name-test"
 
 -- 3.4  Skriv profileDistance :: Profile -> Profile -> Double. Avståndet mellan två 
 --      profiler M och M′ mäts med hjälp av funktionen d(M,M′) beskriven ovan.
 
 profileDistance::Profile->Profile->Double
-profileDistance (Profile _ _ (p)) (Profile _ _ (q)) 
-  | length p == 0 = 0
-  | otherwise = sumProfile p 0 - sumProfile q 0
+profileDistance (Profile (p:ps) _ _ _) (Profile (q:qs) _ _ _) = sumDist (p:ps) (q:qs)
 
-sumProfile::[[(Char,Double)]]->Int->Double 
-sumProfile m it
-  | it == 4 = 0.0
-  | otherwise = sum ( map (getRow m it) [0..(length m - 1)] ) + sumProfile m (it+1)
-  where getRow p i j = snd((p!!j)!!i)
+sumDist::[[(Char,Double)]]->[[(Char,Double)]]->Double
+sumDist [] _ = 0.0
+sumDist (p:ps) (q:qs)
+  | length (p:ps) > 0 = sumRow p q + sumDist ps qs
+  | otherwise = 0.0
+
+sumRow::[(Char,Double)]->[(Char,Double)]->Double
+sumRow [] _ = 0.0
+sumRow (p:ps) (q:qs)
+  | length (p:ps) > 0 = abs(snd(p)-snd(q)) + sumRow ps qs
+  | otherwise = 0.0
+  
+-- sumRow::[[(Char,Double)]]->[[(Char,Double)]]->Double
+-- sumRow [] [] = 0.0
+-- sumRow (p:ps) (q:qs) = (map (getCol p) [0.0..realToFrac(length(p!!0)-1)])
+-- -- sumRow (p:ps) (q:qs) = map abs (zipWith (-) (map (getCol p) [0..(length(p!!0)-1)]) (map (getCol q) [0..(length(q!!0)-1)])) + sumRow ps qs 
+-- 
+-- getCol::[(Char,Double)]->Int->Double
+-- getCol p i = snd((p!!0)!!i)
+
+-- sumProfile::[[(Char,Double)]]->Int->Double 
+-- sumProfile m it
+--   | it == 4 = 0.0
+--   | otherwise = sum ( map (getRow m it) [0..(length m - 1)] ) + sumProfile m (it+1)
+--   where getRow p i j = snd((p!!j)!!i)
   
 -- 4.   Generell beräkning av avståndsmatriser
 -- 4.1  Implementera typklassen Evol och låt MolSeq och Profile bli instanser av 
@@ -168,13 +192,27 @@ sumProfile m it
 
 class Evol a where
   name :: a -> String
-  distance:: a -> Double
+  distance:: a -> a -> Double
+  distanceMatrix::[a] -> [(String, String, Double)]
   
-instance Evol Molseq where
+instance Evol MolSeq where
   name a = seqName a 
-  distance a = seqDistance a a
+  distance a b = seqDistance a b
+  distanceMatrix a = dMatrix a 
   
 instance Evol Profile where
   name a = profileName a 
-  distance a = profileDistance a a
-   
+  distance a b = profileDistance a b
+  distanceMatrix a = dMatrix a
+
+dMatrix::Evol a =>[a]->[(String, String, Double)]
+dMatrix [] = []
+dMatrix (a:as) = helps a (a:as) ++ distanceMatrix(as)
+
+helps::Evol a =>a->[a]->[(String, String, Double)]
+helps a [] = []
+helps a (b:bs) = (name a, name b, distance a b) : helps a bs
+
+-- getNames::[a]->String
+-- getNames [a] = map helps [0..length([a]-1)]
+--   where helps i = name(i)
