@@ -3,24 +3,23 @@
 
 % -*-    1. Fibonacci-talen    -*- %
 
-% Basfall för F = 0
-fib(0, 0).
-% Basfall för F = 1
-fib(1, 1).
-
-% Rekursiv funktion (lägg till mer kommentarer)
+% Beräkna det N:e fibonaccitalet 
 fib(N, F) :-
-  N > 1,
-  N2 is N-2, fib(N2, F2),
-  N1 is N-1, fib(N1, F1),
-  F  is F1 + F2.
+  N > 0,
+  fib_help(N,0,1,F).
   
-% Fixes;
-% 1.  Uppgiftsbeskrivningen använder metasymboler som +N 
-%     och ?F - Vad betyder dem och hur ska de implementeras?
-% 2.  Funktionen klarar inte av fib(30, F) - Hur optimera?
+% När rekursionen i fib_help nått fib-talet 1, 
+% unifiera det ackumulerade fibtalet med F
+fib_help(1,_,F,F).
 
-
+% För varje iteration minskar N med ett samtidigt som vi beräknar
+% nästa fib-tal i Ack. Detta återanvänder vi för att vid nästa
+% iteration beräkna nästa fib-tal osv.
+fib_help(N,A1,A2,F) :-
+  N1 is N-1,
+  Ack is A1+A2,
+  fib_help(N1,A2,Ack,F).
+  
 % -*-    2. Rovarsprak    -*- %
 
 % Funktion för att se om en bokstav är en vokal
