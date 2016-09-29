@@ -1,8 +1,12 @@
 % Laboration 1 Prolog- uppvärmning
 % Logikprogrammering
 % Thony Price, Ousainou Manneh
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Uppgift 1
+% Fibonacci Uppgift 1
+
+% Basfall för fib av 0
+fib(0,0).
 
 % Beräkna det N:e fibonaccitalet
 fib(N, F) :-
@@ -17,6 +21,7 @@ fib_help(1,_,F,F).
 % nästa fib-tal i Ack. Detta återanvänder vi för att vid nästa
 % iteration beräkna nästa fib-tal osv.
 fib_help(N,A1,A2,F) :-
+  N \= 1,
   N1 is N-1,
   Ack is A1+A2,
   fib_help(N1,A2,Ack,F).
@@ -29,20 +34,19 @@ rovarsprak([], []).
 
 % Här mönstermatchas head för båda två
 rovarsprak([H|T], [H|T2]) :-
-% Här kollar vi ifall det är en vokal
-member(H, [97, 101, 105, 111, 117, 121]),
-% Rekursivt anrop
-rovarsprak(T, T2).
+  % Här kollar vi ifall det är en vokal
+  member(H, [97, 101, 105, 111, 117, 121]),
+  % Rekursivt anrop
+  rovarsprak(T, T2).
 
 % Här mönstermnatchas de båda headen igen, men lägger till ett o mellan de.
 rovarsprak([H|T], [H,111,H|T2]) :-
-rovarsprak(T, T2).
+  not(member(H, [97, 101, 105, 111, 117, 121])),
+  rovarsprak(T, T2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Medellängd Uppgift 3
-
-% -*-    3. Medellangd    -*- %
 
 % Om teckenkod är bokstav
 enbokstav(Decimal) :-
@@ -89,10 +93,7 @@ medellangd(Text, AvgLen) :-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 % Uppgift 4
-
-%skyffla(lista, skyfflad)
 
 % Här blir det sant med två listor
 skyffla([], []).
