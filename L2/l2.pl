@@ -16,37 +16,39 @@ knows(spider,conspirator2).
 knows(conspirator1,other1).
 knows(conspirator2,other2).
 
-% Get who's the spider when all conspirators is defined
-spider(Z) :-
-  bagof(X, isCon(X), L), 
-  knowsAll(Z, L).
+% Get who's the spider when list of all conspirators is defined
+isSpider(Z, L) :-
+  knowsAll(Z, L). 
+
 
 % Binds spider to Z if Z knows all conspirators
 knowsAll(_, []) :- !.
-knowsAll(Z, [H|T]) :-
-  knows2(Z, H),
+knowsAll(Z, [H|T]) :- 
+  knows2(Z, H), !,      % <-- This "!" let's us only find one spider
   knowsAll(Z, T).
 
-isCon(conspirator1).
-isCon(conspirator2).
-persons(other1, other2).
 
-% spider(X) :-
-%   knows2()
-
-% Check if two people knows eachother
-knows2(X, Y) :- knows(Y, X).
+% Check if two people knows each other, need a tweak/new predicate that 
+% returns false if same person, i.e. knows2(calle, calle).
+knows2(X, Y) :- not(knows(X, Y)), !, knows2(Y, X).
 knows2(X, Y) :- !, knows(X, Y).
 
 % Generate a list of all persons
 allPersons(L) :- bagof(X, person(X), L).
 
-% Reduce all persons to a list with people "in the web"
+% Generate-and-test to obtain
+spider(X) :-
+  allPersons(All),
+  subset(All, Cons),
+  isSpider(X, Cons).
+
+% Reduce all persons to a list with people "in the web" 
 inWeb(L) :-
   Tmp = [],
   allPersons(X),
   webFilter(X, Tmp, Z),
   L = Z.
+
 
 % Generate list of people who knows at least someone
 webFilter([], Z, Z). :- !.  
@@ -58,6 +60,30 @@ webFilter([H|T], Tmp, Z) :-
   not(knows2(H, _)),
   webFilter(T, Tmp, Z).
   
+  
+% Return permutations for all people inWeb
+perm(A) :-
+  inWeb(L),
+  subset(L, A).
+
+
+% Generate all subsets of a list, code from:
+% http://stackoverflow.com/questions/4912869/subsets-in-prolog
+subset([], []).
+subset([E|Tail], [E|NTail]):-
+  subset(Tail, NTail).
+subset([_|Tail], NTail):-
+  subset(Tail, NTail).
+
+
+
+%%%% --*-- Code that might be reused later --*-- %%%%%
+
+
+
+% Make someone a conspirator
+makeCon(X) :- assert(isCon(X)).
+
 % Make a list with as many lists as there are persons,
 % each list should have a different head than the other ones.
 sLists(L) :-
@@ -91,31 +117,11 @@ combos([H|T], Tmp, Res) :-
   subset(P, C),
   append(S, C, Tmp),
   combos(T, Tmp, Res).
-  
-
-% Return permutations for all people inWeb
-perm(A) :-
-  inWeb(L),
-  subset(L, A).
-
-% Generate all subsets of a list, code from:
-% http://stackoverflow.com/questions/4912869/subsets-in-prolog
-subset([], []).
-subset([E|Tail], [E|NTail]):-
-  subset(Tail, NTail).
-subset([_|Tail], NTail):-
-  subset(Tail, NTail).
-
-
-
-% --*-- Code that might be reused later --*-- %
-
-% Make someone a conspirator
-% makeCon(X) :- assert(isCon(X)).
 
 % Make someone a spider
 makeSpider(X) :- assert(isSpider(X)).
 
+% Get all permutations of a list
 permutation([], []).
 permutation([E | X], Y) :-
   permutation(X, Y1),
