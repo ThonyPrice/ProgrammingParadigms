@@ -2,150 +2,103 @@
 % Laboration 2 Prolog - Konspirationsdetektion
 % Thony Price, Ousainou Manneh
 
-
-% I den här databasen är det bara "spider" som kan vara spindeln i
-% nätet i en konspiration (högst oväntat!)
-person(spider).
-person(conspirator1).
-person(conspirator2).
-person(other1).
-person(other2).
-
-knows(spider,conspirator1).
-knows(spider,conspirator2).
-knows(conspirator1,other1).
-knows(conspirator2,other2).
-
-% Check if two people knows each other -> Tested
-knows2(X, Y) :- not(X =@= Y), not(knows(X, Y)), !, knows3(Y, X).
+% Check if two people knows each other 
 knows2(X, Y) :- not(X =@= Y), knows(X, Y).
-knows3(X, Y) :- knows(X, Y).
-
-% Generate a list of all persons
-allPersons(L) :- bagof(X, person(X), L).
+knows2(X, Y) :- not(X =@= Y), knows(Y, X).
 
 % Reduce all persons to a list with people "in the web" 
-inWeb(L) :-
-  Tmp = [],
-  allPersons(X),
-  webFilter(X, Tmp, Z),
-  L = Z.
+inWeb(Web) :-
+  bagof(X, person(X), All),
+  webFilter(All, [], Web).
 
 % Generate list of people who knows at least someone
 webFilter([], Z, Z). :- !.  
 webFilter([H|T], Tmp, Z) :-
   knows2(H, _), !,
   webFilter(T, [H|Tmp], Z).
-
-webFilter([H|T], Tmp, Z) :-
-  not(knows2(H, _)),
+webFilter([_|T], Tmp, Z) :-
   webFilter(T, Tmp, Z).
 
-% Generate-and-test...
-spider(S) :-
-  inWeb(All),           % Get all persons who knows some one
-  subset(All, Cons),    % Create all possible subsets of conspirators
-  isSpider(S, Cons).    % Test who could be the spider with each subset
+% Pick a person in the Web to be a spider
+pickOne(List, S) :-
+  member(S, List).
 
-% Get who's the spider when list of all conspirators is defined
-isSpider(Z, Cons) :-              % Recives a subset, list of conspirators
-  knowsCons(Cons),                % Make sure no conspirators knows each other
-  knowsAll(Z, Cons). 
-
-knowsCons1([], Res, Res) :- !.
-knowsCons1([H1, H2| T], Tmp, Res) :-
-  bagof(X, knows2(H1, X), L),
-  append(L, Tmp, Tmp1),
-  append(H2, T, List),
-  knowsCons1(List, Tmp1, Res).
-
-knowsCons([_]) :- !.
-knowsCons([H1, H2|T]) :-
-  knowsLoop(H1, [H2|T]),
-  knowsCons([H2|T]).
-
-% For a given person X and list of persons, check if X knows anyone in list 
-knowsLoop(_, []) :- !.  
-knowsLoop(X, [H|T]) :-
-  knows2(X, H), !,
-  knowsLoop(X, T).
-
-% Binds spider to Z if Z knows all conspirators
-knowsAll(_, []) :- !.
-knowsAll(Z, [H|T]) :- 
-  knows2(Z, H),       % <-- This "!" let's us only find one spider
-  knowsAll(Z, T).
-
-% Check if any of the conspirators knows eachother
-% knowsCons1([], _) :- !.
-% knowsCons1([H1, H2|T]) :-
-%   write(H1),
-%   knowsCons1([H2|T]).
-
+% Get all persons except one (spider)  
+spiderKnows(S, C) :-
+  bagof(X, knows2(S, X), C).
 
 % Generate all subsets of a list, code from:
 % http://stackoverflow.com/questions/4912869/subsets-in-prolog
-% NEED DETAILED COMMENTS
-subset([], []).
-subset([E|Tail], [E|NTail]):-
-  subset(Tail, NTail).
-subset([_|Tail], NTail):-
-  subset(Tail, NTail).
+subSet([], []).
+subSet([E|Tail], [E|NTail]):-
+  subSet(Tail, NTail).
+subSet([_|Tail], NTail):-
+  subSet(Tail, NTail).
+
+% Check if someone from one list knows someone in another list
+listKnows(List1, List2) :- 
+  member(X, List1), 
+  member(Y, List2),
+  knows2(X, Y), !.  
+
+% Given a list, return which persons not included  
+notInList([], Return, Return) :- !.  
+notInList([H|T], Out, Return) :-
+  delete(Out, H, Out1), 
+  notInList(T, Out1, Return).
+
+% Check if anyone in a list is not known by anyone in another list
+notKnows([], _) :- !.
+notKnows([H|T], Others) :- 
+  member(P, Others),
+  knows2(H, P), !,  
+  notKnows(T, Others).  
+
+notKnows([H|T], Others) :- 
+  member(P, Others),
+  member(H1, [H|T]),
+  knows2(H, H1), !, 
+  knows2(H1, P), !, 
+  notKnows(T, Others).  
+
+% From a list, get a list of all people that's known 
+allKnown([], Out, Out) :- !.
+allKnown([H|T], Tmp, Out) :-
+  spiderKnows(H, X),
+  append(X, Tmp, Tmp1),
+  allKnown(T, Tmp1, Out).
+
+% Comment
+notKnown([], _) :- !.  
+notKnown([H|T], List) :-
+  member(H, List), !,
+  notKnown(T, List).  
 
 
-
-%%%% --*-- Code that might be reused later --*-- %%%%%
-
-
-
-% Make someone a conspirator
-makeCon(X) :- assert(isCon(X)).
-
-% Make a list with as many lists as there are persons,
-% each list should have a different head than the other ones.
-sLists(L) :-
-  inWeb(X),
-  length(X, C),
-  Tmp = [],
-  append(X, Tmp, X1),
-  rots(X1, Tmp, C, Res),
-  L = Res.
-
-% Ger en lista för lite, basfallet kan sänkas till noll för att ge alla 
-% listor men då flir sista elementet i sista listan 'element'|...
-rots(_, Res, 1, Res) :- !.  
-rots(X, Tmp, C, Res) :-
-  C1 is C-1,
-  rotatelist(X, X1),
-  append([X1], Tmp, Tmp1),
-  rots(X1, Tmp1, C1, Res).
-
-% Rotate list, putting last element first
-rotatelist([H|T], R) :- append(T, [H], R).  
-
-combinations(A) :-
-  sLists(X),
-  combos(X, [], Res),
-  A = Res.
-
-combos([], Res, Res) :- !.  
-combos([H|T], Tmp, Res) :-
-  [S|P] = H,  % S is spider, P is persons
-  subset(P, C),
-  append(S, C, Tmp),
-  combos(T, Tmp, Res).
-
-% Make someone a spider
-makeSpider(X) :- assert(isSpider(X)).
-
-% Get all permutations of a list
-permutation([], []).
-permutation([E | X], Y) :-
-  permutation(X, Y1),
-  append(Y2, Y3, Y1),
-  append(Y2, [E | Y3], Y).
+% Generate-and-test...
+spider(S) :-
+  inWeb(All),                         % List of all people in web
+  pickOne(All, Sx),                   % Choose a spider 
+  spiderKnows(Sx, Cons),              % Get a list of all who knows spider
+  subSet(Cons, Conset),               % Generate all conspirator-subsets of them
   
-% Return permutations for all people inWeb
-perm(A) :-
-  inWeb(L),
-  subset(L, A).
+  Conset \= [],                       % There has to be some conspirators
+  not(listKnows(Conset, Conset)),     % No cons can know each other    
+  
+  notInList([Sx|Conset], All , Not),  % Who is not in list?
+  %notKnows([Sx|Conset], Not),        % Is there anyone not known by spider/con
+  allKnown([Sx|Conset], [], AllKnown),% Get all known by spider and cons
+  notKnown(Not, AllKnown),            % All not in list must be knows by spider or conspirators  
+  
+  S = Sx.                             % If all tests above succeds, Sx must be spider
+
+
+  
+% --*-- Written code that is currently unused --*-- %
+  
+% Binds spider to Z if Z knows all conspirators
+knowsAll(_, []) :- !.
+knowsAll(Z, [H|T]) :- 
+  knows2(Z, H), !,      
+  knowsAll(Z, T).
+
