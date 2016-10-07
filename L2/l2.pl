@@ -2,56 +2,34 @@
 % Laboration 2 Prolog - Konspirationsdetektion
 % Thony Price, Ousainou Manneh
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+spider(S)     :-  person(S), isSpider(S).
 
-spider(S) :-
-  person(Sx),
-  gtFriends(Sx, Sfriends),
-  inWeb(All),
-  allConnected([Sx|Sfriends], All),
-  cases(Sfriends, [], K),
-  notInList(K, All, Persons),
-  allConnected([Sx|Sfriends], Persons), 
-  Sx = S.
+isSpider(S)   :-  setof(X, person(X), All),           % Get list of all persons
+                  gtFriends(S, Sfriends),             % Possible spider friends
+                  allConnected(All, [S|Sfriends]),    % All persons must know spider/possible con
+                  cases(Sfriends, [], _), !.          % Generate lists of possible cons
 
+knows2(X, Y)   :- knows(X, Y); knows(Y, X).           % Check if two people knows each other 
+gtFriends(P,C) :- setof(X, knows2(P, X), C).          % Get all friends of a person 
+knowsSome1(X, List) :- member(Y, List),knows2(X, Y),!.% Check if X knows anyone in List
 
-% Check if two people knows each other 
-knows2(X, Y) :- not(X =@= Y), knows(X, Y).
-knows2(X, Y) :- not(X =@= Y), knows(Y, X).
+allConnected([], _) :- !.
+allConnected([H|T], List) :-                          % True if everyone in first list knows 
+                  knowsSome1(H, List), !,             % at least someone in other list
+                  allConnected(T, List).
 
-% Get all friends of a person 
-gtFriends(P, C) :-              
-  setof(X, knows2(P, X), C).
+cases([], Res, Res).
+cases([P|Tail], K, Res) :-                            % Case1: Set first element as conspirator 
+                  not(knowsSome1(P, K)),              % Person, can't know any cons in K
+                  gtFriends(P, Friends),              % Get friends of P
+                  subtract(Tail, Friends, T1),        % Remove from possible cons (Tail)
+                  check(T1, [P|K]),                   % Check all not in P and K knows someone in P or K
+                  cases(T1, [P|K], Res).
+cases([_|T], P, Res) :-                               % Case2: Set first element as person   
+                  check(T, P),  
+                  cases(T, P, Res). 
 
-% Get all persons  
-inWeb(All) :-                       
-  setof(X, person(X), All).
-
-% True if everyone in first list knows someone in other list
-allConnected(_, []) :- !.
-allConnected(Cons, [H|T]) :-
-  member(C, Cons),
-  knows2(C, H), !,
-  allConnected(Cons, T).
-
-% Check if X knows anyone in List
-listKnows(X, List) :-  
-  member(Y, List),
-  knows2(X, Y), !. 
-
-% Bind Tmp to Res when list is empty (base case)
-cases([], K, K).
-% Case 1: Set first element as conspirator
-cases([H|T], P, K) :-
-  not(listKnows(H, P)),   % H (possible con) can't know any other cons
-  cases(T, [P|H], K).
-% Case2: Set first element as person   
-cases([_|T], P, K) :-
-  cases(T, P, K).  
-  
-% Given a list, return which persons not included  
-notInList([], Return, Return) :- !.  
-notInList([H|T], Out, Return) :-
-  delete(Out, H, Out1), 
-  notInList(T, Out1, Return).
-
+check(P, K) :-    setof(X, person(X), All),
+                  append(P, K, PnK),
+                  subtract(All, PnK, Others),
+                  allConnected(Others, PnK).
