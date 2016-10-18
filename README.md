@@ -5,7 +5,7 @@ uppgifts-instruktioner.
 
 ## Inlämning
 
-Lösningen ska läggas i en katalog `S1/` (stort L) i repot och skickas
+Lösningen ska läggas i en katalog `S1/` (stort S) i repot och skickas
 in som hämtbegäran.  Du kan ge din hämtbegäran vilken titel du vill,
 t.ex. "Labb-inlämning".
 
