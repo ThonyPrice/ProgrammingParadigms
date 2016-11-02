@@ -1,6 +1,6 @@
 # Project:              S1 - Programmeringsparadigm
 # Authors:              Thony Price 
-# Last revision:        2016-10-31
+# Last revision:        2016-11-01
 
 #!/usr/bin/python
 import re
@@ -24,11 +24,13 @@ def hidden2(x):         # Uppgift 4
     r += ".*"
     return r
 
-def equation():     # uppgift 5
+def equation():         # Uppgift 5
+    return "^(\+|\-)?\d+([\+\-\*\/]\d+)*([\=](\+|\-)?\d+([\+\-\*\/]\d+)*)?$"
+
+def parentheses():      # Uppgift 6
+    return "^(\((\((\((\((\(\))*\))*\))*\))*\))*$"
+
+def sorted3():          # Uppgift 7
     return ""
 
-def parentheses():  # uppgift 6
-    return ""
 
-def sorted3():      # uppgift 7
-    return ""
