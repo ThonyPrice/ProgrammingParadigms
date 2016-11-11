@@ -2,10 +2,7 @@
 # Created by:             Thony Price 
 # Last revision:          2016-11-10
 
-import re
-import sys
-import queue
-
+####################################################################
 '''
 __GRAMMATIK__
 
@@ -28,6 +25,11 @@ COLOR   ->  Matcha "COLOR #xxxxxx" där x är positivt heltal eller char
 REP     ->  Matcha "REP s"
 
 '''
+####################################################################
+
+import re
+import sys
+import queue
 
 # Store each char alone in a queue q, break at newline
 def makeQueue(userInput):    
@@ -61,7 +63,7 @@ FORW 1. LEFT 90.
 if __name__ == "__main__":
     main ()
     
-#######################################################
+####################################################################
 
 class Lenoa:
     
@@ -84,4 +86,36 @@ class Lenoa:
     # Update the state of Leonas pen, UP or DOWN
     def changePen(self, value):
         pass
+        
+####################################################################
+
+class Token:
+    
+    def __init__ (self, categ = None, value = None, row = None):
+        self.categ  = None
+        self.value  = None
+        self.row    = None
+    
+class Comment(Tokens):
+    
+    def __init__(self, categ):
+        Token.__init__(self, "Comment", row)
+
+    
+class Movement(Tokens):
+    
+    def __init__(self, categ, value, row):
+        Token.__init__(self, categ, value, row)
+
+class Pencil(Tokens):
+    
+    def __init__(self, categ, value, row):
+        Token.__init__(self, categ, value, row)
+
+class Color(Tokens):
+    
+    def __init__(self, categ, value, row):
+        Token.__init__(self, categ, value, row)
+
+    
     
