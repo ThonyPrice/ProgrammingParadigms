@@ -2,6 +2,7 @@
 # Created by:             Thony Price 
 # Last revision:          2016-11-10
 
+import re
 import sys
 import queue
 
@@ -37,13 +38,13 @@ def makeQueue(userInput):
     return q
 
 def main():
-    userInput = sys.stdin.readlines()
-    q = makeQueue(userInput)
-    while not q.empty():
-        tmp = q.get()
-        print(tmp)
-    global tokens
-    tokens = []
+    userInput   = sys.stdin.readlines()
+    # q = makeQueue(userInput)
+    # while not q.empty():
+    #     tmp = q.get()
+    #     print(tmp)
+    # global tokens
+    # tokens = ["DOWN", ]
     # -- END -- #
 
 '''    
@@ -59,3 +60,28 @@ FORW 1. LEFT 90.
 # Runs main program from this module
 if __name__ == "__main__":
     main ()
+    
+#######################################################
+
+class Lenoa:
+    
+    # All information about Leona
+    def __init__ (self):
+        self.x      = None
+        self.y      = None
+        self.angle  = None
+        self.color  = None
+        self.pen    = False
+    
+    # Calculate Leonas new position moving FORW or BACK
+    def move(self, direction, value):
+        pass
+        
+    # Change Leonas angle LEFT or RIGHT
+    def turn(self, direction, value):
+        pass
+    
+    # Update the state of Leonas pen, UP or DOWN
+    def changePen(self, value):
+        pass
+    
