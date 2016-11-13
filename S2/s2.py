@@ -1,6 +1,10 @@
-# Programmeringparadigm   Lab S2 
-# Created by:             Thony Price 
-# Last revision:          2016-11-12
+# Programmeringparadigm     Lab S2 
+# Created by:               Thony Price 
+# Last revision:            2016-11-12
+
+# To do:                    Make all token Classes
+#                           Split tokionary so grouped numbers makes same type objects                           
+#
 
 ####################################################################
 '''
@@ -74,14 +78,15 @@ class Comment(Token):
     def __init__(self, row):
         Token.__init__(self, None, row)
         
+class Movement(Token):    
+    def __init__(self, axis, row):
+        Token.__init__(self, None, row)
+        self.axis = axis
+        
 class Space(Token):
     def __init__(self, row):
         Token.__init__(self, None, row)
     
-class Movement(Token):
-    
-    def __init__(self, categ, value, row):
-        Token.__init__(self, categ, value, row)
 
 class Pencil(Token):
     
@@ -103,77 +108,42 @@ def makeQueue(userInput):
             q.put(char)
     return q
 
-def makeTokens(string): 
+def makeTokens(userInput): 
 
     # Regex patterns for tokens
-    allTokens   = re.compile("%.*\n|DOWN|\.")
-    space       = re.compile("\s")                      
-    air         = re.compile("\s\s+")
-    comment     = re.compile("%.*\n")
-    movement    = re.compile("FORW|BACK|LEFT|RIGHT")  
-    pen         = re.compile("UP|DOWN")
-    dot         = re.compile("\.")
-
-    # Convert userInput to list of Token objects
+    allTokens = re.compile  (r"""
+                            (%.*\n)                         # 1. Comments
+                            |(forw|back|left|right)         # 2. Movement 
+                            |(up|down)                      # 3. Pencil
+                            |(color)                        # 4. Color
+                            |(\d+)                          # 5. Value
+                            |(\#[A-Fa-f0-9]{6})             # 6. Color
+                            |(\.)                           # 7. Dot
+                            |(\n)                           # 8. Newline 
+                            |(")                            # 9. Quote
+                            |(REP)                          # 10. Rep 
+                            |(\s\s+)                        # 11. Air
+                            |(\s)                           # 12. Space
+                            """, re.VERBOSE)
+    
+    # Token types of objects
+    tokionary =     {       1:Comment,      2:Movement,     3:"Pencil",     
+                            4:"Color",      5:"Value",      6: "Cvalue",    
+                            7:"Dot",        8:"Newline",    9:"Quote",      
+                            10:"Rep",       11:"Air",       12:"Space"      }   
+                    
+    elements = re.finditer(allTokens, userInput)
     row = 1
-    tokens_lst = re.findall(tokens, string)
-    while len(string) != 0:
-        
-        # # Remove multiple spaces, tabs and newlines
-        # try:
-        # line = re.sub("\s\s+|\t", "", line, 1)
-        # except:
-        #     pass
-        #     
-        # # Match comments
-        comArg  = comment.match(string)
-        try:
-            comArg.group(0)
-            line = re.sub(comment, "", string, 1)
-            tokens_lst.append(Comment(row))  
-        except:
-            pass          
-        # 
-        # # Match and remove pen arguments
-        # penArg  = pen.match(line)
-        # try:
-        #     value = penArg.group(0)
-        #     if value == "DOWN":
-        #         tokens_lst.append(Pencil(1, row))  
-        #     else:
-        #         tokens_lst.append(Pencil(0, row))  
-        #     line = re.sub(pen, "", line, 1)            
-        # except:
-        #     pass          
-        #             
-        
-        # Regex patterns for tokens
-        # spaces = re.compile()
-        # # Remove more spaces than 2, tabs and newlines
-        # line = re.sub("\s\s+", "", line, 1)
-        # 
-        # # Match and remove single space
-        # space = re.search("\s", line)
-        # if space != None:
-        #     line = re.sub("\s", "", line, 1)
-        #     tokens_lst.append(Space(row))
-        # # Match and remove Comment from line
-        # comment = re.search("%.*\n", line)
-        # if comment != None:
-        #     line = re.sub("%.*\n", "", line, 1)
-        #     tokens_lst.append(Comment(row))
-        # Match and remove single space
-        # moves = re.("FORW\s\d+|BACK\s\d+", line)
-        # if len(moves) != 0:
-        #     for move in moves:
-        #         tmp1 = Movement(move[0:4], move[5:], row)
-        #         tokens_lst.append(tmp1)
-        # print("ROW:", row)
-        row += 1
-        # for token in tokens_lst:
-        #     print(token.categ, "@Value", token.value, "@Row", token.row)
-        
-    return tokens_lst
+    tokens_ls =     []
+    for el in elements:
+        kind = tokionary[el.lastindex]
+        tokens_ls.append(kind(row))
+
+        if el.lastindex == 8 or el.lastindex == 1:
+            row += 1
+        # print(tokionary[idx], repr(item.group(item.lastindex)))
+    
+    return tokens_ls
         
 
 def main():
@@ -182,22 +152,15 @@ def main():
     userInput   = "".join(userInput)
     userInput   = userInput.lower()
 
-    tokens_lst  = makeTokens(userInput)
-    
-    tokens      = re.compile("(%.*\n)|(ritar)|(DOWN)|(\.)|(\n)")
-    for item in re.finditer(tokens, userInput):
-        print(item, item.lastindex)
-    # print("--------------------------")
-    # 
-    # for token in tokens_lst:
-    #     print("Row:", token.row, "Value:", token.value, "Type:", type(token))
-    # q = makeQueue(userInput)
-    # while not q.empty():
-    #     tmp = q.get()
-    #     print(tmp)
-    # global Token
-    # Token = ["DOWN", ]
-    # -- END -- #
+    tokens_ls   = makeTokens(userInput)
+    print("--------------------------")
+    for token in tokens_ls:
+        if isinstance(token, Comment):
+            print("Nice", token.row)
+        
+    # for item in re.finditer(tokens, userInput):
+    #     print(item, item.lastindex)
+
 
 '''
 % Det har ar en kommentar
@@ -214,5 +177,3 @@ FORW 1. LEFT 90.
 # Runs main program from this module
 if __name__ == "__main__":
     main ()
-    
-####################################################################
