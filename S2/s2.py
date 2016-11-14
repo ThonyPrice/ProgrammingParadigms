@@ -6,44 +6,26 @@
 '''
 __GRAMMATIK__
 
-<exp>           ::=
-
+    <exp>           ::= <instruction> | <instruction><exp> 
+                        | REP SPACE VALUE SPACE <rep>
+                        | REP SPACE VALUE SPACE <rep> <exp>
+    <instructtion>  ::= MOVEMENT SPACE VALUE <end>
+                        | COLOR SPACE CVALUE <end>
+                        | PENCIL <end>
+    <end>           ::= DOT | SPACE DOT
+    <rep>           ::= <instruction> | QUOTE <exp> QUOTE
+                        
 __TOKENS__
-Movement,    
-Pencil
-Value
-Cvalue
-Color
-Rep
-Comment      
-Dot
-Quote
-Space 
 
-<språk>         ::= <instruktion> | <instruktion><språk> | COMMENT <språk>
-<instruktion>   ::= <argument> | <rep>
-<argument>      ::= <move><space><value><air>.| COLOR<space><color>>air>.|
-                    <pen><air>.
-                    COLOR | REP <rep> 
-<move>          ::= FORW | BACK | LEFT | RIGHT
-<pen>           ::= UP | DOWN
-<rep>           ::= REP<instruktion> | "<språk>"
-<space>         ::= " "
-<air>           ::= " "*
-<value>         ::= /d*
-<color>         ::= #{[\d\w], 6}
-
-__Token__
-
-COMMENT ->  "%" Följd av tecken, slutar vid newline "\n"
-FORW    ->  Matcha FORW
-BACK    ->  Matcha BACK
-LEFT    ->  Matcha LEFT
-RIGHT   ->  Matcha RIGHT
-UP      ->  Matcha UP
-DOWN    ->  Matcha DOWN
-COLOR   ->  Matcha COLOR
-REP     ->  Matcha "REP s"
+    MOVEMENT    -> (FORW|BACK|LEFT|RIGHT)  
+    PENCIL      -> (UP|DOWN)
+    COLOR       -> "COLOR"
+    REP         -> (REP)
+    VALUE       -> Natural number
+    CVALUE      -> Color in hex format
+    DOT         -> A period sign
+    QUOTE       -> A quotationmark
+    SPACE       -> Singe or multiple spaces, tabs, comments and newlines 
 
 '''
 ####################################################################
@@ -51,49 +33,7 @@ REP     ->  Matcha "REP s"
 import re
 import sys
 import queue
-from s2Classes import * 
-
-####################################################################
-
-def makeTokens(userInput): 
-
-    # Regex patterns for tokens
-    allTokens = re.compile  (r"""
-                            (%.*\n)                         # 1. Comment
-                            |(forw|back|left|right)         # 2. Movement 
-                            |(up|down)                      # 3. Pencil
-                            |(\d+)                          # 4. Value
-                            |(\#[A-Fa-f0-9]{6})             # 5. Cvalue
-                            |(color)                        # 6. Color
-                            |(rep)                          # 7. Rep 
-                            |(\.)                           # 8. Dot
-                            |(")                            # 9. Quote
-                            |(\n)                           # 10. Newline - Space 
-                            |(\s+)                          # 11. Air - Space
-                            """, re.VERBOSE)
-    
-    # Token types of objects
-    tokionary =         {   1:Space,        2:Movement,     3:Pencil,       
-                            4:Value,        5:Cvalue,       6:Color,        
-                            7:Rep,          8:Dot,          9:Quote,        
-                            10:Space,       11:Space,                   }   
-    
-    # Split input into tokens                
-    elements = re.finditer(allTokens, userInput)
-    row = 1
-    token_ls = []
-    # Iterate throught tokens and enqueue token objects
-    for el in elements:
-        kind = tokionary[el.lastindex]
-        val = repr(el.group(el.lastindex))
-        if el.lastindex in range(2,6):
-            token_ls.append(kind(val, row))
-        if el.lastindex in range(6,12) or el.lastindex == 1:
-            token_ls.append(kind(row))
-        if el.lastindex == 1 or el.lastindex == 10:
-            row += 1
-
-    return token_ls
+from s2Tokens import * 
 
 ####################################################################
 
@@ -152,56 +92,62 @@ def exp(ls):
 
 # Syntax check for instructions
 def instruction(ls):
-    print("instruction")
-    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
-    global latest
-    # Check syntax for Movement command
-    latest = ls[0]
-    if isinstance(ls[0], Movement):
-        ls.pop(0)
+    try:
+        print("instruction")
+        # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
+        global latest
+        # Check syntax for Movement command
         latest = ls[0]
-        if isinstance(ls[0], Space):
+        if isinstance(ls[0], Movement):
             ls.pop(0)
             latest = ls[0]
-            if isinstance(ls[0], Value):
+            if isinstance(ls[0], Space):
                 ls.pop(0)
-                crtlEnd(ls)
-                return
-    # Check syntax for Color command              
-    if isinstance(ls[0], Color):
-        ls.pop(0)
-        latest = ls[0]
-        if isinstance(ls[0], Space):
+                latest = ls[0]
+                if isinstance(ls[0], Value):
+                    ls.pop(0)
+                    crtlEnd(ls)
+                    return
+        # Check syntax for Color command              
+        if isinstance(ls[0], Color):
             ls.pop(0)
             latest = ls[0]
-            if isinstance(ls[0], Cvalue):
+            if isinstance(ls[0], Space):
                 ls.pop(0)
-                crtlEnd(ls)
-                return
-    # Check syntax for Pencil command
-    if isinstance(ls[0], Pencil):
-        print("Pen")
-        ls.pop(0)
-        crtlEnd(ls)
-        return
-    raise SyntaxError             
+                latest = ls[0]
+                if isinstance(ls[0], Cvalue):
+                    ls.pop(0)
+                    crtlEnd(ls)
+                    return
+        # Check syntax for Pencil command
+        if isinstance(ls[0], Pencil):
+            print("Pen")
+            ls.pop(0)
+            crtlEnd(ls)
+            return
+        raise SyntaxError   
+    except:          
+        raise SyntaxError             
 
 # Check that following tokens are Dot or Space Dot
 def crtlEnd(ls):
-    print("Ctrl")
-    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
-    global latest
-    latest = ls[0]
-    if isinstance(ls[0], Dot):
-        ls.pop(0)
-        return 
-    if isinstance(ls[0], Space):
-        ls.pop(0)
+    try:
+        print("Ctrl")
+        # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
+        global latest
         latest = ls[0]
         if isinstance(ls[0], Dot):
             ls.pop(0)
-            return
-    raise SyntaxError
+            return 
+        if isinstance(ls[0], Space):
+            ls.pop(0)
+            latest = ls[0]
+            if isinstance(ls[0], Dot):
+                ls.pop(0)
+                return
+        raise SyntaxError
+    except:
+        raise SyntaxError
 
 def rep(ls):
     print("rep")
