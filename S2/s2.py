@@ -107,29 +107,32 @@ def rmSpaces(ls):
         pass
     return ls
     
-def parser(ls, last):
+def parser(ls):
+    global latest
     try:         
         sTree   = exp(ls)               # Syntax tree
         return ("Formeln ar syntaktiskt korrekt")
-    except SyntaxError as error:                            
-        return "SyntaxError on line", ls[0].row   
+    except SyntaxError:                            
+        return "SyntaxError on line", latest.row
 
+# First "level" of controlling syntax
 def exp(ls):
+    global latest
     if len(ls) != 0:
         if isinstance(ls[0], Space):
-            ls.pop(0)
+            latest = ls.pop(0)
             exp(ls)
             return
         if isinstance(ls[0], Quote):    # Jump back to rep function
             return
         if isinstance(ls[0], Rep):
-            ls.pop(0)
+            latest = ls.pop(0)
             if isinstance(ls[0], Space):
-                ls.pop(0)
+                latest = ls.pop(0)
                 if isinstance(ls[0], Value):
-                    ls.pop(0)
+                    latest = ls.pop(0)
                     if isinstance(ls[0], Space):
-                        ls.pop(0)
+                        latest = ls.pop(0)
                         rep(ls)
                         exp(ls)
                         return
@@ -141,56 +144,59 @@ def exp(ls):
 
 # Syntax check for instructions
 def instruction(ls):
+    global latest
     # Check syntax for Movement command
     if isinstance(ls[0], Movement):
-        ls.pop(0)
+        latest = ls.pop(0)
         if isinstance(ls[0], Space):
-            ls.pop(0)
+            latest = ls.pop(0)
             if isinstance(ls[0], Value):
-                ls.pop(0)
+                latest = ls.pop(0)
                 crtlEnd(ls)
                 return
     # Check syntax for Color command              
     if isinstance(ls[0], Color):
-        ls.pop(0)
+        latest = ls.pop(0)
         if isinstance(ls[0], Space):
-            ls.pop(0)
+            latest = ls.pop(0)
             if isinstance(ls[0], Cvalue):
-                ls.pop(0)
+                latest = ls.pop(0)
                 crtlEnd(ls)
                 return
     # Check syntax for Pencil command
     if isinstance(ls[0], Pencil):
-        ls.pop(0)
+        latest = ls.pop(0)
         crtlEnd(ls)
         return
-    raise SyntaxError                
+    raise SyntaxError             
 
 # Check that following tokens are Dot or Space Dot
 def crtlEnd(ls):
+    global latest
     if isinstance(ls[0], Dot):
-        ls.pop(0)
+        latest = ls.pop(0)
         return 
     elif isinstance(ls[0], Space) and isinstance(ls[1], Dot) :
-        ls.pop(0)
-        ls.pop(0)
+        latest = ls.pop(0)
+        latest = ls.pop(0)
         return
-    raise SyntaxError    
+    raise SyntaxError
 
 def rep(ls):
+    global latest
     if isinstance(ls[0], Quote):
-        ls.pop(0)
+        latest = ls.pop(0)
         exp(ls)
         try:
             if isinstance(ls[0], Quote):
-                ls.pop(0)
+                latest = ls.pop(0)
                 return
         except:
-            raise SyntaxError                
+            raise SyntaxError             
     else:
         instruction(ls)
         return
-    raise SyntaxError                
+    raise SyntaxError              
         
     
 def main():
