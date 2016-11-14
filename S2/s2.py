@@ -1,6 +1,6 @@
 # Programmeringparadigm     Lab S2 
 # Created by:               Thony Price 
-# Last revision:            2016-11-12
+# Last revision:            2016-11-14
 
 ####################################################################
 '''
@@ -30,23 +30,10 @@ __TOKENS__
 '''
 ####################################################################
 
-import re
 import sys
-import queue
 from s2Tokens import * 
 
-####################################################################
 
-# Remove following whitespaces
-def rmSpaces(ls):
-    try:
-        for idx in range((len(ls)-1)):
-            while isinstance(ls[idx], Space) and isinstance(ls[idx+1], Space):
-                del ls[idx+1]
-    except:
-        pass
-    return ls
-    
 def parser(ls):
     global latest
     try:         
@@ -55,10 +42,9 @@ def parser(ls):
     except SyntaxError:                            
         return "SyntaxError on line", latest.row
 
+
 # First "level" of controlling syntax
 def exp(ls):
-    print("Xps")
-    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
     if len(ls) == 0:
         return                          # End of string
@@ -90,11 +76,10 @@ def exp(ls):
         return
     raise SyntaxError                   # Non exhaustive pattern
 
+
 # Syntax check for instructions
 def instruction(ls):
     try:
-        print("instruction")
-        # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
         global latest
         # Check syntax for Movement command
         latest = ls[0]
@@ -121,7 +106,6 @@ def instruction(ls):
                     return
         # Check syntax for Pencil command
         if isinstance(ls[0], Pencil):
-            print("Pen")
             ls.pop(0)
             crtlEnd(ls)
             return
@@ -129,11 +113,10 @@ def instruction(ls):
     except:          
         raise SyntaxError             
 
+
 # Check that following tokens are Dot or Space Dot
 def crtlEnd(ls):
     try:
-        print("Ctrl")
-        # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
         global latest
         latest = ls[0]
         if isinstance(ls[0], Dot):
@@ -149,9 +132,8 @@ def crtlEnd(ls):
     except:
         raise SyntaxError
 
+
 def rep(ls):
-    print("rep")
-    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
     latest = ls[0]
     if isinstance(ls[0], Quote):
@@ -175,18 +157,9 @@ def main():
     userInput   = sys.stdin.readlines()     
     userInput   = "".join(userInput)
     userInput   = userInput.lower()
-
+    # Convert string to list of tokens
     token_ls    = makeTokens(userInput)
-
-    print("--------------------------")
-    for token in token_ls:
-        try:
-            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
-        except:
-            print("Type:", type(token), "@Row:", token.row)     
-    
     tokens      = rmSpaces(token_ls)
-
     # Print tokens_ls -> For debugging purposes
     print("--------------------------")
     for token in tokens:
@@ -194,7 +167,6 @@ def main():
             print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
         except:
             print("Type:", type(token), "@Row:", token.row)    
-    
     # Parse the list and create syntaxTree
     sTree       = parser(tokens)
     print(sTree)
