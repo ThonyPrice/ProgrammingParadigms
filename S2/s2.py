@@ -2,13 +2,23 @@
 # Created by:               Thony Price 
 # Last revision:            2016-11-12
 
-# To do:                    Make all token Classes
-#                           Split tokionary so grouped numbers makes same type objects                           
-#
-
 ####################################################################
 '''
 __GRAMMATIK__
+
+<exp>       ::=
+
+__TOKENS__
+Movement,    
+Pencil
+Value
+Cvalue
+Color
+Rep
+Comment      
+Dot
+Quote
+Space 
 
 <språk>         ::= <instruktion> | <instruktion><språk> | COMMENT <språk>
 <instruktion>   ::= <argument> | <rep>
@@ -41,110 +51,57 @@ REP     ->  Matcha "REP s"
 import re
 import sys
 import queue
+from s2Classes import * 
 
 ####################################################################
-
-class Lenoa:
-    
-    # All information about Leona
-    def __init__ (self):
-        self.x      = None
-        self.y      = None
-        self.angle  = None
-        self.color  = None
-        self.pen    = False
-    
-    # Calculate Leonas new position moving FORW or BACK
-    def move(self, direction, value):
-        pass
-        
-    # Change Leonas angle LEFT or RIGHT
-    def turn(self, direction, value):
-        pass
-    
-    # Update the state of Leonas pen, UP or DOWN
-    def changePen(self, value):
-        pass
-        
-####################################################################
-
-class Token:
-    
-    def __init__ (self, value = None, row = None):
-        self.value  = value
-        self.row    = row
-    
-class Comment(Token):
-    def __init__(self, row):
-        Token.__init__(self, None, row)
-        
-class Movement(Token):    
-    def __init__(self, axis, row):
-        Token.__init__(self, None, row)
-        self.axis = axis
-        
-class Space(Token):
-    def __init__(self, row):
-        Token.__init__(self, None, row)
-    
-
-class Pencil(Token):
-    
-    def __init__(self, value, row):
-        Token.__init__(self, value, row)
-
-class Color(Token):
-    
-    def __init__(self, categ, value, row):
-        Token.__init__(self, categ, value, row)
-        
-####################################################################
-
-# Store each char alone in a queue q, break at newline
-def makeQueue(userInput):    
-    q = queue.Queue()
-    for line in userInput:
-        for char in line:
-            q.put(char)
-    return q
 
 def makeTokens(userInput): 
 
     # Regex patterns for tokens
     allTokens = re.compile  (r"""
-                            (%.*\n)                         # 1. Comments
-                            |(forw|back|left|right)         # 2. Movement 
-                            |(up|down)                      # 3. Pencil
-                            |(color)                        # 4. Color
+                            (\n)                            # 1. Newline 
+                            |(\s\s+)                        # 2. Air
+                            |(forw|back|left|right)         # 3. Movement 
+                            |(up|down)                      # 4. Pencil
                             |(\d+)                          # 5. Value
-                            |(\#[A-Fa-f0-9]{6})             # 6. Color
-                            |(\.)                           # 7. Dot
-                            |(\n)                           # 8. Newline 
-                            |(")                            # 9. Quote
-                            |(REP)                          # 10. Rep 
-                            |(\s\s+)                        # 11. Air
+                            |(\#[A-Fa-f0-9]{6})             # 6. Cvalue
+                            |(color)                        # 7. Color
+                            |(rep)                          # 8. Rep 
+                            |(%.*\n)                        # 9. Comment
+                            |(\.)                           # 10. Dot
+                            |(")                            # 11. Quote
                             |(\s)                           # 12. Space
                             """, re.VERBOSE)
     
     # Token types of objects
-    tokionary =     {       1:Comment,      2:Movement,     3:"Pencil",     
-                            4:"Color",      5:"Value",      6: "Cvalue",    
-                            7:"Dot",        8:"Newline",    9:"Quote",      
-                            10:"Rep",       11:"Air",       12:"Space"      }   
-                    
+    tokionary =         {   1:"Newline",    2:"Air",        3:Movement,     
+                            4:Pencil,       5:Value,        6:Cvalue,    
+                            7:Color,        8:Rep,          9:Comment,      
+                            10:Dot,        11:Quote,        12:Space    }   
+    # Split input into tokens                
     elements = re.finditer(allTokens, userInput)
     row = 1
-    tokens_ls =     []
+    token_q = queue.Queue()
+    # Iterate throught tokens and enqueue token objects
     for el in elements:
         kind = tokionary[el.lastindex]
-        tokens_ls.append(kind(row))
-
-        if el.lastindex == 8 or el.lastindex == 1:
+        val = repr(el.group(el.lastindex))
+        if el.lastindex in range(3,7):
+            token_q.put(kind(val, row))
+        if el.lastindex in range(7,13):
+            token_q.put(kind(row))
+        if el.lastindex == 1 or el.lastindex == 9:
             row += 1
-        # print(tokionary[idx], repr(item.group(item.lastindex)))
-    
-    return tokens_ls
-        
+
+    return token_q
+
+def parser(q):
+    try:                                  
+        sTree = exp(q)         # Syntax tree
+        print("Formeln är syntaktiskt korrekt")
+        return sTree
+    except SyntaxError as error:                            
+        return str(error) + radslut(q)    
 
 def main():
     # Get input, join to string, make case insensitive
@@ -152,15 +109,19 @@ def main():
     userInput   = "".join(userInput)
     userInput   = userInput.lower()
 
-    tokens_ls   = makeTokens(userInput)
+    token_q     = makeTokens(userInput)
+    # Print tokens_ls -> For debugging purposes
     print("--------------------------")
-    for token in tokens_ls:
-        if isinstance(token, Comment):
-            print("Nice", token.row)
-        
-    # for item in re.finditer(tokens, userInput):
-    #     print(item, item.lastindex)
-
+    while not token_q.empty():
+        token = token_q.get()
+        try:
+            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
+        except:
+            print("Type:", type(token), "@Row:", token.row)
+    
+    # Parse the list and create syntaxTree
+    syntaxTree  = parser(token_q)
+    
 
 '''
 % Det har ar en kommentar
