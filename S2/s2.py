@@ -6,7 +6,7 @@
 '''
 __GRAMMATIK__
 
-<exp>       ::=
+<exp>           ::=
 
 __TOKENS__
 Movement,    
@@ -73,7 +73,7 @@ def makeTokens(userInput):
                             """, re.VERBOSE)
     
     # Token types of objects
-    tokionary =         {   1:"Comment",    2:Movement,     3:Pencil,       
+    tokionary =         {   1:Space,        2:Movement,     3:Pencil,       
                             4:Value,        5:Cvalue,       6:Color,        
                             7:Rep,          8:Dot,          9:Quote,        
                             10:Space,       11:Space,                   }   
@@ -88,7 +88,7 @@ def makeTokens(userInput):
         val = repr(el.group(el.lastindex))
         if el.lastindex in range(2,6):
             token_ls.append(kind(val, row))
-        if el.lastindex in range(6,12):
+        if el.lastindex in range(6,12) or el.lastindex == 1:
             token_ls.append(kind(row))
         if el.lastindex == 1 or el.lastindex == 10:
             row += 1
@@ -101,7 +101,7 @@ def makeTokens(userInput):
 def rmSpaces(ls):
     try:
         for idx in range((len(ls)-1)):
-            if isinstance(ls[idx], Space) and isinstance(ls[idx+1], Space):
+            while isinstance(ls[idx], Space) and isinstance(ls[idx+1], Space):
                 del ls[idx+1]
     except:
         pass
@@ -117,84 +117,109 @@ def parser(ls):
 
 # First "level" of controlling syntax
 def exp(ls):
+    print("Xps")
+    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
-    if len(ls) != 0:
+    if len(ls) == 0:
+        return                          # End of string
+    latest = ls[0]                      # ???
+    if isinstance(ls[0], Space):
+        ls.pop(0)
+        exp(ls)
+        return
+    if isinstance(ls[0], Quote):        # Jump back to rep function
+        return
+    if isinstance(ls[0], Rep):
+        ls.pop(0)
+        latest = ls[0]
         if isinstance(ls[0], Space):
-            latest = ls.pop(0)
-            exp(ls)
-            return
-        if isinstance(ls[0], Quote):    # Jump back to rep function
-            return
-        if isinstance(ls[0], Rep):
-            latest = ls.pop(0)
-            if isinstance(ls[0], Space):
-                latest = ls.pop(0)
-                if isinstance(ls[0], Value):
-                    latest = ls.pop(0)
-                    if isinstance(ls[0], Space):
-                        latest = ls.pop(0)
-                        rep(ls)
-                        exp(ls)
-                        return
-        else:
-            instruction(ls)
-            exp(ls)
-            return
-    return                              # End of input
+            ls.pop(0)
+            latest = ls[0]
+            if isinstance(ls[0], Value):
+                ls.pop(0)
+                latest = ls[0]
+                if isinstance(ls[0], Space):
+                    ls.pop(0)
+                    rep(ls)
+                    exp(ls)
+                    return
+                raise SyntaxError
+    else:
+        instruction(ls)
+        exp(ls)
+        return
+    raise SyntaxError                   # Non exhaustive pattern
 
 # Syntax check for instructions
 def instruction(ls):
+    print("instruction")
+    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
     # Check syntax for Movement command
+    latest = ls[0]
     if isinstance(ls[0], Movement):
-        latest = ls.pop(0)
+        ls.pop(0)
+        latest = ls[0]
         if isinstance(ls[0], Space):
-            latest = ls.pop(0)
+            ls.pop(0)
+            latest = ls[0]
             if isinstance(ls[0], Value):
-                latest = ls.pop(0)
+                ls.pop(0)
                 crtlEnd(ls)
                 return
     # Check syntax for Color command              
     if isinstance(ls[0], Color):
-        latest = ls.pop(0)
+        ls.pop(0)
+        latest = ls[0]
         if isinstance(ls[0], Space):
-            latest = ls.pop(0)
+            ls.pop(0)
+            latest = ls[0]
             if isinstance(ls[0], Cvalue):
-                latest = ls.pop(0)
+                ls.pop(0)
                 crtlEnd(ls)
                 return
     # Check syntax for Pencil command
     if isinstance(ls[0], Pencil):
-        latest = ls.pop(0)
+        print("Pen")
+        ls.pop(0)
         crtlEnd(ls)
         return
     raise SyntaxError             
 
 # Check that following tokens are Dot or Space Dot
 def crtlEnd(ls):
+    print("Ctrl")
+    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
+    latest = ls[0]
     if isinstance(ls[0], Dot):
-        latest = ls.pop(0)
+        ls.pop(0)
         return 
-    elif isinstance(ls[0], Space) and isinstance(ls[1], Dot) :
-        latest = ls.pop(0)
-        latest = ls.pop(0)
-        return
+    if isinstance(ls[0], Space):
+        ls.pop(0)
+        latest = ls[0]
+        if isinstance(ls[0], Dot):
+            ls.pop(0)
+            return
     raise SyntaxError
 
 def rep(ls):
+    print("rep")
+    # print("Type:", type(ls[0]), "@Row:", ls[0].row, "@Value:", ls[0].value)
     global latest
+    latest = ls[0]
     if isinstance(ls[0], Quote):
-        latest = ls.pop(0)
+        hold = ls.pop(0)
         exp(ls)
         try:
             if isinstance(ls[0], Quote):
-                latest = ls.pop(0)
+                ls.pop(0)
                 return
         except:
+            latest = hold
             raise SyntaxError             
     else:
-        instruction(ls)
+        exp(ls)
         return
     raise SyntaxError              
         
@@ -206,6 +231,14 @@ def main():
     userInput   = userInput.lower()
 
     token_ls    = makeTokens(userInput)
+
+    print("--------------------------")
+    for token in token_ls:
+        try:
+            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
+        except:
+            print("Type:", type(token), "@Row:", token.row)     
+    
     tokens      = rmSpaces(token_ls)
 
     # Print tokens_ls -> For debugging purposes
