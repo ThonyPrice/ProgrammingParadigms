@@ -81,46 +81,60 @@ def makeTokens(userInput):
     # Split input into tokens                
     elements = re.finditer(allTokens, userInput)
     row = 1
-    token_q = queue.Queue()
+    token_ls = []
     # Iterate throught tokens and enqueue token objects
     for el in elements:
         kind = tokionary[el.lastindex]
         val = repr(el.group(el.lastindex))
         if el.lastindex in range(3,7):
-            token_q.put(kind(val, row))
+            token_ls.append(kind(val, row))
         if el.lastindex in range(7,13):
-            token_q.put(kind(row))
+            token_ls.append(kind(row))
         if el.lastindex == 1 or el.lastindex == 9:
             row += 1
 
-    return token_q
+    return token_ls
 
-def parser(q):
-    try:                                  
-        sTree = exp(q)         # Syntax tree
-        print("Formeln är syntaktiskt korrekt")
+def parser(ls):
+    try:                                 
+        sTree = exp(ls)         # Syntax tree
+        print("Formeln ar syntaktiskt korrekt")
         return sTree
     except SyntaxError as error:                            
-        return str(error) + radslut(q)    
+        return "SyntaxError"    
 
+def exp(ls):
+    if not isinstance(ls[0], Comment):
+        ls.pop()
+        instruct(ls)
+    else:
+        ls.pop()
+    return
+    
 def main():
     # Get input, join to string, make case insensitive
     userInput   = sys.stdin.readlines()     
     userInput   = "".join(userInput)
     userInput   = userInput.lower()
 
-    token_q     = makeTokens(userInput)
+    token_ls    = makeTokens(userInput)
     # Print tokens_ls -> For debugging purposes
     print("--------------------------")
-    while not token_q.empty():
-        token = token_q.get()
-        try:
-            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
-        except:
-            print("Type:", type(token), "@Row:", token.row)
+    # for token in token_ls:
+    #     try:
+    #         print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
+    #     except:
+    #         print("Type:", type(token), "@Row:", token.row)
+    for token in token_ls:
+        if isinstance(token, Comment):
+            print("YES")
+        else:
+            print("No")
+    
     
     # Parse the list and create syntaxTree
-    syntaxTree  = parser(token_q)
+    # syntaxTree  = parser(token_ls)
+    # print(syntaxTree)
     
 
 '''
