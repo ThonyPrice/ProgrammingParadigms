@@ -59,25 +59,25 @@ def makeTokens(userInput):
 
     # Regex patterns for tokens
     allTokens = re.compile  (r"""
-                            (\n)                            # 1. Newline 
-                            |(\s\s+)                        # 2. Air
-                            |(forw|back|left|right)         # 3. Movement 
-                            |(up|down)                      # 4. Pencil
-                            |(\d+)                          # 5. Value
-                            |(\#[A-Fa-f0-9]{6})             # 6. Cvalue
-                            |(color)                        # 7. Color
-                            |(rep)                          # 8. Rep 
-                            |(%.*\n)                        # 9. Comment
-                            |(\.)                           # 10. Dot
-                            |(")                            # 11. Quote
-                            |(\s)                           # 12. Space
+                            (%.*\n)                         # 1. Comment
+                            |(forw|back|left|right)         # 2. Movement 
+                            |(up|down)                      # 3. Pencil
+                            |(\d+)                          # 4. Value
+                            |(\#[A-Fa-f0-9]{6})             # 5. Cvalue
+                            |(color)                        # 6. Color
+                            |(rep)                          # 7. Rep 
+                            |(\.)                           # 8. Dot
+                            |(")                            # 9. Quote
+                            |(\n)                           # 10. Newline - Space 
+                            |(\s+)                          # 11. Air - Space
                             """, re.VERBOSE)
     
     # Token types of objects
-    tokionary =         {   1:"Newline",    2:"Air",        3:Movement,     
-                            4:Pencil,       5:Value,        6:Cvalue,    
-                            7:Color,        8:Rep,          9:Comment,      
-                            10:Dot,        11:Quote,        12:Space    }   
+    tokionary =         {   1:"Comment",    2:Movement,     3:Pencil,       
+                            4:Value,        5:Cvalue,       6:Color,        
+                            7:Rep,          8:Dot,          9:Quote,        
+                            10:Space,       11:Space,                   }   
+    
     # Split input into tokens                
     elements = re.finditer(allTokens, userInput)
     row = 1
@@ -86,30 +86,112 @@ def makeTokens(userInput):
     for el in elements:
         kind = tokionary[el.lastindex]
         val = repr(el.group(el.lastindex))
-        if el.lastindex in range(3,7):
+        if el.lastindex in range(2,6):
             token_ls.append(kind(val, row))
-        if el.lastindex in range(7,13):
+        if el.lastindex in range(6,12):
             token_ls.append(kind(row))
-        if el.lastindex == 1 or el.lastindex == 9:
+        if el.lastindex == 1 or el.lastindex == 10:
             row += 1
 
     return token_ls
 
-def parser(ls):
-    try:                                 
-        sTree = exp(ls)         # Syntax tree
-        print("Formeln ar syntaktiskt korrekt")
-        return sTree
+####################################################################
+
+# Remove following whitespaces
+def rmSpaces(ls):
+    try:
+        for idx in range((len(ls)-1)):
+            if isinstance(ls[idx], Space) and isinstance(ls[idx+1], Space):
+                del ls[idx+1]
+    except:
+        pass
+    return ls
+    
+def parser(ls, last):
+    try:         
+        sTree   = exp(ls)               # Syntax tree
+        return ("Formeln ar syntaktiskt korrekt")
     except SyntaxError as error:                            
-        return "SyntaxError"    
+        return "SyntaxError on line", ls[0].row   
 
 def exp(ls):
-    if not isinstance(ls[0], Comment):
-        ls.pop()
-        instruct(ls)
+    if len(ls) != 0:
+        if isinstance(ls[0], Space):
+            ls.pop(0)
+            exp(ls)
+            return
+        if isinstance(ls[0], Quote):    # Jump back to rep function
+            return
+        if isinstance(ls[0], Rep):
+            ls.pop(0)
+            if isinstance(ls[0], Space):
+                ls.pop(0)
+                if isinstance(ls[0], Value):
+                    ls.pop(0)
+                    if isinstance(ls[0], Space):
+                        ls.pop(0)
+                        rep(ls)
+                        exp(ls)
+                        return
+        else:
+            instruction(ls)
+            exp(ls)
+            return
+    return                              # End of input
+
+# Syntax check for instructions
+def instruction(ls):
+    # Check syntax for Movement command
+    if isinstance(ls[0], Movement):
+        ls.pop(0)
+        if isinstance(ls[0], Space):
+            ls.pop(0)
+            if isinstance(ls[0], Value):
+                ls.pop(0)
+                crtlEnd(ls)
+                return
+    # Check syntax for Color command              
+    if isinstance(ls[0], Color):
+        ls.pop(0)
+        if isinstance(ls[0], Space):
+            ls.pop(0)
+            if isinstance(ls[0], Cvalue):
+                ls.pop(0)
+                crtlEnd(ls)
+                return
+    # Check syntax for Pencil command
+    if isinstance(ls[0], Pencil):
+        ls.pop(0)
+        crtlEnd(ls)
+        return
+    raise SyntaxError                
+
+# Check that following tokens are Dot or Space Dot
+def crtlEnd(ls):
+    if isinstance(ls[0], Dot):
+        ls.pop(0)
+        return 
+    elif isinstance(ls[0], Space) and isinstance(ls[1], Dot) :
+        ls.pop(0)
+        ls.pop(0)
+        return
+    raise SyntaxError    
+
+def rep(ls):
+    if isinstance(ls[0], Quote):
+        ls.pop(0)
+        exp(ls)
+        try:
+            if isinstance(ls[0], Quote):
+                ls.pop(0)
+                return
+        except:
+            raise SyntaxError                
     else:
-        ls.pop()
-    return
+        instruction(ls)
+        return
+    raise SyntaxError                
+        
     
 def main():
     # Get input, join to string, make case insensitive
@@ -118,37 +200,21 @@ def main():
     userInput   = userInput.lower()
 
     token_ls    = makeTokens(userInput)
+    tokens      = rmSpaces(token_ls)
+
     # Print tokens_ls -> For debugging purposes
     print("--------------------------")
-    # for token in token_ls:
-    #     try:
-    #         print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
-    #     except:
-    #         print("Type:", type(token), "@Row:", token.row)
-    for token in token_ls:
-        if isinstance(token, Comment):
-            print("YES")
-        else:
-            print("No")
-    
+    for token in tokens:
+        try:
+            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
+        except:
+            print("Type:", type(token), "@Row:", token.row)    
     
     # Parse the list and create syntaxTree
-    # syntaxTree  = parser(token_ls)
-    # print(syntaxTree)
+    sTree       = parser(tokens)
+    print(sTree)
     
-
-'''
-% Det har ar en kommentar
-% Nu ritar vi en kvadrat
-% Det har ar en kommentar
-% Nu ritar vi en kvadrat
-DOWN.
-FORW 1. LEFT 90.
-FORW 1. LEFT 90.
-FORW 1. LEFT 90.
-FORW 1. LEFT 90.
-'''
-
+    
 # Runs main program from this module
 if __name__ == "__main__":
     main ()
