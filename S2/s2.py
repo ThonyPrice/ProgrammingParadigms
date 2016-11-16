@@ -32,13 +32,15 @@ __TOKENS__
 
 import sys
 from s2Tokens import * 
+from s2Parse import *
 
 
 def parser(ls):
     global latest
     try:         
         sTree   = exp(ls)               # Syntax tree
-        return ("Formeln ar syntaktiskt korrekt")
+        print("Formeln ar syntaktiskt korrekt")
+        return sTree
     except SyntaxError:                            
         return "SyntaxError on line", latest.row
 
@@ -47,7 +49,7 @@ def parser(ls):
 def exp(ls):
     global latest
     if len(ls) == 0:
-        return                          # End of string
+        return sTree                         # End of string
     latest = ls[0]                      # ???
     if isinstance(ls[0], Space):
         ls.pop(0)
@@ -56,7 +58,6 @@ def exp(ls):
     if isinstance(ls[0], Quote):        # Jump back to rep function
         return
     if isinstance(ls[0], Rep):
-        ls.pop(0)
         latest = ls[0]
         if isinstance(ls[0], Space):
             ls.pop(0)
@@ -72,8 +73,8 @@ def exp(ls):
                 raise SyntaxError
     else:
         instruction(ls)
-        exp(ls)
-        return
+        sTree = exp(ls)
+        return sTree
     raise SyntaxError                   # Non exhaustive pattern
 
 
@@ -83,32 +84,35 @@ def instruction(ls):
         global latest
         # Check syntax for Movement command
         latest = ls[0]
+        sTree = Node(latest)                      # Create Node
         if isinstance(ls[0], Movement):
-            ls.pop(0)
-            latest = ls[0]
+            token   = ls.pop(0)             # Get token
+            latest  = ls[0]
             if isinstance(ls[0], Space):
                 ls.pop(0)
                 latest = ls[0]
                 if isinstance(ls[0], Value):
-                    ls.pop(0)
+                    value = (ls.pop(0)).value # Set token value
+                    token.setVal(value)
                     crtlEnd(ls)
-                    return
+                    return sTree
         # Check syntax for Color command              
         if isinstance(ls[0], Color):
-            ls.pop(0)
-            latest = ls[0]
+            token   = ls.pop(0)
+            latest  = ls[0]
             if isinstance(ls[0], Space):
                 ls.pop(0)
                 latest = ls[0]
                 if isinstance(ls[0], Cvalue):
-                    ls.pop(0)
+                    value = (ls.pop(0)).value # Set token value
+                    token.setVal(value)
                     crtlEnd(ls)
-                    return
+                    return sTree
         # Check syntax for Pencil command
         if isinstance(ls[0], Pencil):
-            ls.pop(0)
+            token  = ls.pop(0)
             crtlEnd(ls)
-            return
+            return sTree
         raise SyntaxError   
     except:          
         raise SyntaxError             
@@ -164,7 +168,7 @@ def main():
     print("--------------------------")
     for token in tokens:
         try:
-            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value)
+            print("Type:", type(token), "@Row:", token.row, "@Value:", token.value, "@Axis", token.axis)
         except:
             print("Type:", type(token), "@Row:", token.row)    
     # Parse the list and create syntaxTree

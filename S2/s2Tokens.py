@@ -1,6 +1,6 @@
 # Programmeringparadigm     Lab S2 
 # Created by:               Thony Price 
-# Last revision:            2016-11-14
+# Last revision:            2016-11-15
 
 ####################################################################
 
@@ -66,6 +66,9 @@ class Token:
     def __init__ (self, value = None, row = None):
         self.value  = value
         self.row    = row
+    
+    def setVal(self, value):
+        self.value  = value
     
 class Movement(Token):    
     def __init__(self, axis, row):
