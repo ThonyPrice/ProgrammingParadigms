@@ -6,7 +6,7 @@
 
 import re
 import sys
-import copy
+import math
 
 class Token():
     
@@ -163,47 +163,59 @@ class Parser():
                 sTree = ParseNode(keep)
                 if not lexer.popToken().getType() == "Space":
                     raise SyntaxError
-                sTree.left = self.rep(lexer)    # Left branch?
-                self.exp(lexer) 
-                return
-            if token.getType() == "Up" or token.getType() == "Down":
-                sTree = (lexer.popToken())
-                self.ctrlSpaceDot(lexer)
-                self.exp(lexer)
-                return sTree
+                sTree.left = self.rep(lexer)        # Left branch
+                # sTree.right = self.exp(lexer)       # Right branch
+                # return sTree
             if  token.getType() == "Left" or token.getType() == "Right" or \
-                token.getType() == "Forw" or token.getType() == "Back":
-                keep = lexer.popToken()
-                self.last = token
-                if not lexer.popToken().getType() == "Space":
-                    raise SyntaxError
-                self.last = token
-                if not lexer.popToken().getType() == "Value":
-                    raise SyntaxError
-                keep.value = lexer.prev.value
-                sTree = ParseNode(keep)
-                self.ctrlSpaceDot(lexer)
-                sTree.right = self.exp(lexer)
-                return sTree
-            if token.getType() == "Color":
-                keep = lexer.popToken()
-                self.last = token
-                if not lexer.popToken().getType() == "Space":
-                    raise SyntaxError
-                self.last = token
-                if not lexer.popToken().getType() == "Cvalue":
-                    raise SyntaxError   
-                keep.value = lexer.prev.value  
-                self.ctrlSpaceDot(lexer) 
-                self.exp(lexer)
-                return         
+                token.getType() == "Forw" or token.getType() == "Back" or \
+                token.getType() == "Up" or token.getType() == "Down" or \
+                token.getType() == "Color": 
+                sTree = self.instruction(lexer) 
+                # sTree.right = self.instruction(lexer) 
+            sTree.right = self.exp(lexer)           
         return sTree
+    
+    def instruction(self, lexer):
+        token = lexer.peekToken()
+        if token.getType() == "Up" or token.getType() == "Down":
+            sTree = ParseNode(lexer.popToken())
+            self.ctrlSpaceDot(lexer)
+            # sTree.right = self.exp(lexer)
+            # return sTree
+        if  token.getType() == "Left" or token.getType() == "Right" or \
+            token.getType() == "Forw" or token.getType() == "Back":
+            keep = lexer.popToken()
+            self.last = token
+            if not lexer.popToken().getType() == "Space":
+                raise SyntaxError
+            self.last = token
+            if not lexer.popToken().getType() == "Value":
+                raise SyntaxError
+            keep.value = lexer.prev.value
+            sTree = ParseNode(keep)
+            self.ctrlSpaceDot(lexer)
+            # sTree.right = self.exp(lexer)
+            # return sTree
+        if token.getType() == "Color":
+            keep = lexer.popToken()
+            self.last = token
+            if not lexer.popToken().getType() == "Space":
+                raise SyntaxError
+            self.last = token
+            if not lexer.popToken().getType() == "Cvalue":
+                raise SyntaxError   
+            keep.value = lexer.prev.value  
+            sTree = ParseNode(keep)
+            self.ctrlSpaceDot(lexer)
+            # sTree.right = self.exp(lexer)
+        return sTree    
         
     def rep(self, lexer):
+        sTree = ParseNode("Pass")
         token = lexer.peekToken()
         if token.getType() == "Quote":
             keep = lexer.popToken()
-            self.exp(lexer)
+            sTree.right = self.exp(lexer)
             try:
                 if not lexer.popToken() == "Quote":
                     lexer.prev = keep
@@ -211,11 +223,11 @@ class Parser():
             except: 
                 if lexer.hasNext():
                     lexer.popToken()
-                    return
+                    return sTree
                 raise SyntaxError
         else:
-            self.exp(lexer)
-            return
+            sTree.right = self.instruction(lexer)
+            return sTree
 
 
     def ctrlSpaceDot(self, lexer):
@@ -257,6 +269,59 @@ class ParseNode():
     def right(self):
         return "Hej"
 
+class Leona():
+    
+    # All information about Leona
+    def __init__ (self):
+        self.x      = 0
+        self.y      = 0
+        self.angle  = 0
+        self.color_ = "#0000FF"
+        self.pen    = False
+    
+    # Calculate Leonas new position moving FORW or BACK
+    def process(self, args):
+        for arg in args:
+            op = arg.getType().lower()
+            func = getattr(self, op)
+            func(arg)
+    
+    def down(self, token):
+        self.pen == True
+        
+    def up(self, token):
+        self.pen == False
+        
+    def left(self, token):
+        self.angle += int(token.value)
+
+    def right(self, token):
+        self.angle += int(token.value)
+        
+    def color(self, token):
+        self.color_ = token.getVal()
+
+    def forw(self, token):
+        old_x   = self.x
+        old_y   = self.y
+        angle   = math.radians(self.angle)
+        move    = token.value
+        new_x   = old_x + int(move) * math.cos((int(math.pi)*angle)/180)
+        new_y   = old_y + int(move) * math.cos((int(math.pi)*angle)/180)
+        self.x  = new_x        
+        self.y  = new_y        
+        # if self.pen == True:
+        print(self.color_, old_x, old_y, new_x, new_y)
+
+    def back(self, token):
+        pass
+
+    def rep(self, token):
+        pass
+
+        
+
+
 class Process():
     
     def __init__ (self, tree):
@@ -269,42 +334,31 @@ class Process():
         args1 = []
         for arg in args:
             if arg != "Pass":
-                print(arg)
                 args1.append(arg)
+                print(arg)
+        leona = Leona()
+        leona.process(args1)
         return "Hej"
         
     def mkArgs(self, tree, args):
         # if tree.op.getType() != "Pass":
         args.append(tree.op)
+        # if isinstance(tree.op, Token):
+        #     if tree.op.ofType == "Rep":
+        #         print(tree.op.value)
+        #         repeat = tree.op.value
         if tree.left != None:
-            print("left", tree.left.op)
-            self.mkArgs(tree.left, args)
+            repeat = tree.op.value
+            print(repeat)
+            for i in range(int(repeat)):
+            # print("left", tree.left.op)
+                self.mkArgs(tree.left, args)
         if tree.right != None:
-            print("right", tree.right.op)
+            # print("right", tree.right.op)
             self.mkArgs(tree.right, args)
         return args
         
-class Lenoa:
-    
-    # All information about Leona
-    def __init__ (self):
-        self.x      = None
-        self.y      = None
-        self.angle  = None
-        self.color  = None
-        self.pen    = False
-    
-    # Calculate Leonas new position moving FORW or BACK
-    def move(self, direction, value):
-        pass
-        
-    # Change Leonas angle LEFT or RIGHT
-    def turn(self, direction, value):
-        pass
-    
-    # Update the state of Leonas pen, UP or DOWN
-    def changePen(self, value):
-        pass
+
 
 ####################################################################
 
@@ -321,9 +375,10 @@ def main():
     # Call parser
     sTree       = Parser(lexer).tree
     print("--- Enter Process ---")
-    # print(sTree)
-    result      = Process(sTree)
-    print(result)
+    print(sTree)
+    if sTree != None:
+        result      = Process(sTree)
+        print(result)
     print("--- END ---")
     
 # Runs main program from this module
