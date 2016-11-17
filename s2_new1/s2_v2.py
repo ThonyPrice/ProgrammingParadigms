@@ -88,6 +88,8 @@ class Lexer():
                 token_ls.append(Token(ofType, row))
             if el.lastindex == 1 or el.lastindex == 10:
                 row += 1
+        del token_ls[len(token_ls)-1]
+        token_ls.append(Token("EOF", 0))
         # Remove multiple spaces
         return self.rmSpaces(token_ls)
         
@@ -108,7 +110,7 @@ class Lexer():
     
     def popToken(self):
         token = self.token_ls.pop(0)        # MAYBE SKIP PREV ASSERTION FOR SPACE?
-        if token.ofType != "Space" and token.ofType != "Invalid":
+        if token.ofType != "Space" and token.ofType != "Invalid" and token.ofType != "EOF":
             self.prev = token
         return token
     
@@ -144,6 +146,8 @@ class Parser():
             # print("Exp:", token)
             self.last = token
             # print("Token:", token)
+            if token.getType() == "EOF":
+                return sTree
             if token.getType() == "Invalid":
                 raise SyntaxError(token.row)
             if token.getType() == "Space":
@@ -301,16 +305,16 @@ class Leona():
             func(arg)
     
     def down(self, token):
-        self.pen == True
+        self.pen = True
         
     def up(self, token):
-        self.pen == False
+        self.pen = False
         
     def left(self, token):
         self.angle += int(token.value)
 
     def right(self, token):
-        self.angle += int(token.value)
+        self.angle -= int(token.value)
         
     def color(self, token):
         self.color_ = token.getVal().upper()
@@ -322,16 +326,16 @@ class Leona():
         move    = token.value
         self.x  = old_x + float(move) * math.cos((math.pi*angle)/180)
         self.y  = old_y + float(move) * math.sin((math.pi*angle)/180)
-        # if self.pen == True:
-        if abs(self.x) < 0.0001:
+        if abs(self.x) < 0.00001:
             self.x = 0
-        if abs(self.y) < 0.0001:
+        if abs(self.y) < 0.00001:
             self.y = 0
-        print(self.color_, " ", end="")
-        print("{0:.4f}".format(round(old_x,4)), " ", end="")
-        print("{0:.4f}".format(round(old_y,4)), " ", end="")
-        print("{0:.4f}".format(round(self.x,4)), " ", end="")
-        print("{0:.4f}".format(round(self.y,4)))
+        if self.pen == True:
+            print(self.color_, " ", end="")
+            print("{0:.4f}".format(old_x,4), " ", end="")
+            print("{0:.4f}".format(old_y,4), " ", end="")
+            print("{0:.4f}".format(self.x,4), " ", end="")
+            print("{0:.4f}".format(self.y,4))
         
     def back(self, token):
         old_x   = self.x
@@ -340,16 +344,16 @@ class Leona():
         move    = token.value
         self.x  = old_x - float(move) * math.cos((math.pi*angle)/180)
         self.y  = old_y - float(move) * math.sin((math.pi*angle)/180)
-        # if self.pen == True:
-        if abs(self.x) < 0.0001:
+        if abs(self.x) < 0.00001:
             self.x = 0
-        if abs(self.y) < 0.0001:
+        if abs(self.y) < 0.00001:
             self.y = 0
-        print(self.color_, " ", end="")
-        print("{0:.4f}".format(round(old_x,4)), " ", end="")
-        print("{0:.4f}".format(round(old_y,4)), " ", end="")
-        print("{0:.4f}".format(round(self.x,4)), " ", end="")
-        print("{0:.4f}".format(round(self.y,4)))
+        if self.pen == True:
+            print(self.color_, " ", end="")
+            print("{0:.4f}".format(old_x,4), " ", end="")
+            print("{0:.4f}".format(old_y,4), " ", end="")
+            print("{0:.4f}".format(self.x,4), " ", end="")
+            print("{0:.4f}".format(self.y,4))
 
     def rep(self, token):
         pass
