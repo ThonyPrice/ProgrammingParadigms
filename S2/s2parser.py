@@ -13,20 +13,25 @@ class Parser():
     
     def parse(self, lexer):
         try:       
+            global quotes
+            quotes = 0
             sTree   = self.exp(lexer)
             # print("Formeln är syntaktiskt korrekt")
             return sTree
         except SyntaxError as error:                            
-            print("Syntaxfel på rad", error) # 
+            print("Syntaxfel pa rad", error) # 
             return None
     
     # "Top level" of parsing
     def exp(self, lexer):
+        global quotes
         sTree = ParseNode("Pass")
         if lexer.hasNext():
             token = lexer.peekToken()
             self.last = token
             if token.getType() == "EOF":
+                if not quotes == 0:
+                    raise SyntaxError(self.last.row)
                 return sTree
             if token.getType() == "Invalid":
                 raise SyntaxError(token.row)
@@ -35,6 +40,7 @@ class Parser():
                 sTree.right = self.exp(lexer)
                 return sTree
             if token.getType() == "Quote":
+                quotes -= 1
                 return sTree                         # Jump back to rep
             if token.getType() == "Rep":
                 keep = lexer.popToken()
@@ -95,9 +101,11 @@ class Parser():
         return sTree    
         
     def rep(self, lexer):
+        global quotes
         sTree = ParseNode("Pass")
         token = lexer.peekToken()
         if token.getType() == "Quote":
+            quotes += 1
             keep = lexer.popToken()                 # Pop quoatation mark 
             sTree.right = self.exp(lexer)
             try:
@@ -105,12 +113,30 @@ class Parser():
                     lexer.prev = keep
                     raise SyntaxError(token.row)
             except: 
+                quotes -= 1
                 if lexer.hasNext():
+                    # sTree.right = self.exp(lexer)
                     return sTree
                 raise SyntaxError(token.row)
+        if token.getType() == "Rep":
+            keep = lexer.popToken()
+            self.last = token
+            if not lexer.popToken().getType() == "Space":
+                raise SyntaxError(lexer.prev.row)
+            self.last = token    
+            if not lexer.popToken().getType() == "Value":
+                raise SyntaxError(lexer.prev.row)
+            self.last = token
+            keep.value = lexer.prev.value
+            sTree = ParseNode(keep)
+            if not lexer.popToken().getType() == "Space":
+                raise SyntaxError(lexer.prev.row)
+            self.last   = token
+            sTree.left  = self.rep(lexer)  
         else:
             sTree.right = self.instruction(lexer)
             return sTree
+        return sTree
     
     # Make sure a argument if ended with space and dot or only dot
     def ctrlSpaceDot(self, lexer):

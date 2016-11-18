@@ -45,14 +45,14 @@ class Lexer():
                                 (%.*\n)                         # 1. Comment
                                 |(forw|back|left|right)         # 2. Movement 
                                 |(up|down)                      # 3. Pencil
-                                |(\d+)                          # 4. Value
+                                |([1-9][0-9]*)                  # 4. Value
                                 |(\#[A-Fa-f0-9]{6})             # 5. Cvalue
                                 |(color)                        # 6. Color
                                 |(rep)                          # 7. Rep 
                                 |(\.)                           # 8. Dot
                                 |(")                            # 9. Quote
                                 |(\n)                           # 10. Newline - Space 
-                                |(\s+)                          # 11. Air - Space
+                                |(\s+|\t+)                      # 11. Air - Space
                                 |(.*?)                          # 12. Invalid
                                 """, re.VERBOSE)
         # Token types of objects

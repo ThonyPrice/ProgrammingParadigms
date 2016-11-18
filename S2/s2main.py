@@ -46,6 +46,7 @@ def main():
     sTree       = Parser(lexer).tree
     # If sTree != None -> Syntax passed 
     if sTree != None:
+        # print(sTree)
         result      = Process(sTree)
 
 # Runs main program from this module

@@ -93,12 +93,15 @@ class Process():
         for arg in args:
             if arg != "Pass":
                 args1.append(arg)
+                # print(arg)
         leona = Leona()
         leona.process(args1)
         return 
         
     def mkArgs(self, tree, args):
+        # print(tree.op)
         args.append(tree.op)
+        
         if tree.left != None:
             repeat = tree.op.value
             for i in range(int(repeat)):
