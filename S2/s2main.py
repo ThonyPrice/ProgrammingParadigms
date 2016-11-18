@@ -35,6 +35,8 @@ __TOKENS__
 #################################################################### 
 
 def main():
+    # Raise recursion limit
+    sys.setrecursionlimit(100000000)
     # Get input, join to string, make case insensitive
     userInput   = sys.stdin.readlines()     
     userInput   = "".join(userInput)

@@ -30,8 +30,8 @@ class Parser():
             token = lexer.peekToken()
             self.last = token
             if token.getType() == "EOF":
-                if not quotes == 0:
-                    raise SyntaxError(self.last.row)
+                if quotes != 0:
+                    raise SyntaxError(lexer.prev.row)
                 return sTree
             if token.getType() == "Invalid":
                 raise SyntaxError(token.row)
@@ -40,8 +40,10 @@ class Parser():
                 sTree.right = self.exp(lexer)
                 return sTree
             if token.getType() == "Quote":
-                quotes -= 1
-                return sTree                         # Jump back to rep
+                if quotes != 0:
+                    quotes -= 1
+                    return sTree                         # Jump back to rep
+                raise SyntaxError(self.last.row)        # Chg
             if token.getType() == "Rep":
                 keep = lexer.popToken()
                 self.last = token
@@ -62,7 +64,7 @@ class Parser():
                 token.getType() == "Up" or token.getType() == "Down" or \
                 token.getType() == "Color": 
                 sTree = self.instruction(lexer) 
-            sTree.right = self.exp(lexer)           
+            sTree.right = self.exp(lexer)  
         return sTree
     
     # Parse the instruction type arguments
@@ -113,7 +115,7 @@ class Parser():
                     lexer.prev = keep
                     raise SyntaxError(token.row)
             except: 
-                quotes -= 1
+                # quotes -= 1
                 if lexer.hasNext():
                     # sTree.right = self.exp(lexer)
                     return sTree
