@@ -110,6 +110,9 @@ class Lexer():
         
     def peekToken(self):
         return self.token_ls[0]
+        
+    def peek2Tokens(self):
+        return self.token_ls[1]
     
     def popToken(self):
         token = self.token_ls.pop(0)

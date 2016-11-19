@@ -112,6 +112,10 @@ class Parser():
         if token.getType() == "Quote":
             quotes += 1
             keep = lexer.popToken()                 # Pop quoatation mark 
+            if lexer.peekToken().getType() == "Quote":
+                raise SyntaxError(lexer.peekToken().row)
+            if lexer.peek2Tokens().getType() == "Quote":
+                raise SyntaxError(lexer.peek2Tokens().row)
             sTree.right = self.exp(lexer)
             try:
                 if not lexer.popToken() == "Quote":
