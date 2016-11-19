@@ -1,6 +1,6 @@
 # Programmeringparadigm     Lab S2 
 # Created by:               Thony Price 
-# Last revision:            2016-11-17
+# Last revision:            2016-11-19
 
 import math
 
@@ -39,13 +39,15 @@ class Leona():
         self.color_ = token.getVal().upper()
 
     # Caluculate and print Leonas new position
-    def forw(self, token):
+    def forw(self, token, back = None):
         old_x   = self.x
         old_y   = self.y
-        angle   = self.angle
-        move    = token.value
-        self.x  = old_x + float(move) * math.cos((math.pi*angle)/180)
-        self.y  = old_y + float(move) * math.sin((math.pi*angle)/180)
+        if back == None:
+            self.x  = old_x + float(token.value) * math.cos((math.pi*self.angle)/180)
+            self.y  = old_y + float(token.value) * math.sin((math.pi*self.angle)/180)
+        else:
+            self.x  = old_x - float(token.value) * math.cos((math.pi*self.angle)/180)
+            self.y  = old_y - float(token.value) * math.sin((math.pi*self.angle)/180)
         if abs(self.x) < 0.00001:
             self.x = 0
         if abs(self.y) < 0.00001:
@@ -57,24 +59,9 @@ class Leona():
             print("{0:.4f}".format(self.x,4), " ", end="")
             print("{0:.4f}".format(self.y,4))
     
-    # Same as above but moving back    
+    # Same as above (forw) but moving back    
     def back(self, token):
-        old_x   = self.x
-        old_y   = self.y
-        angle   = self.angle
-        move    = token.value
-        self.x  = old_x - float(move) * math.cos((math.pi*angle)/180)
-        self.y  = old_y - float(move) * math.sin((math.pi*angle)/180)
-        if abs(self.x) < 0.00001:
-            self.x = 0
-        if abs(self.y) < 0.00001:
-            self.y = 0
-        if self.pen == True:
-            print(self.color_, " ", end="")
-            print("{0:.4f}".format(old_x,4), " ", end="")
-            print("{0:.4f}".format(old_y,4), " ", end="")
-            print("{0:.4f}".format(self.x,4), " ", end="")
-            print("{0:.4f}".format(self.y,4))
+        self.forw(token, "back")
 
     def rep(self, token):
         pass
@@ -89,19 +76,16 @@ class Process():
     def process(self, tree):
         args = []
         args = self.mkArgs(tree, args)
-        args1 = []
-        for arg in args:
-            if arg != "Pass":
-                args1.append(arg)
-                # print(arg)
         leona = Leona()
-        leona.process(args1)
+        leona.process(args)
         return 
-        
+    
+    # Iterate through tree inorder and put arguments in list
+    # If a rep node is found (i.e got a left branch) add the left
+    # branch the number of times specified in the rep node
     def mkArgs(self, tree, args):
-        # print(tree.op)
-        args.append(tree.op)
-        
+        if tree.op != "Pass":
+            args.append(tree.op)
         if tree.left != None:
             repeat = tree.op.value
             for i in range(int(repeat)):
@@ -109,4 +93,3 @@ class Process():
         if tree.right != None:
             self.mkArgs(tree.right, args)
         return args
-        

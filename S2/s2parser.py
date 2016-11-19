@@ -34,6 +34,7 @@ class Parser():
                     raise SyntaxError(lexer.prev.row)    # lexer.prev.row
                 return sTree
             if token.getType() == "Invalid":
+                # print("this?")
                 raise SyntaxError(token.row)
             if token.getType() == "Space":
                 lexer.popToken()
@@ -42,8 +43,8 @@ class Parser():
             if token.getType() == "Quote":
                 if quotes != 0:
                     quotes -= 1
-                    return sTree                         # Jump back to rep
-                raise SyntaxError(self.last.row)        # Chg
+                    return sTree                        # Jump back to rep
+                raise SyntaxError(token.row)            # Chg?
             if token.getType() == "Rep":
                 keep = lexer.popToken()
                 self.last = token
@@ -51,6 +52,7 @@ class Parser():
                     raise SyntaxError(lexer.prev.row)
                 self.last = token    
                 if not lexer.popToken().getType() == "Value":
+                    # print("this?")
                     raise SyntaxError(lexer.prev.row)
                 self.last = token
                 keep.value = lexer.prev.value
@@ -127,7 +129,6 @@ class Parser():
                 if lexer.hasNext():
                     # sTree.right = self.exp(lexer)
                     return sTree
-                
                 raise SyntaxError(self.last.row)    #
         if token.getType() == "Rep":
             keep = lexer.popToken()

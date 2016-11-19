@@ -52,7 +52,7 @@ class Lexer():
                                 |(\.)                           # 8. Dot
                                 |(")                            # 9. Quote
                                 |(\n)                           # 10. Newline - Space 
-                                |(\s+|\t+)                      # 11. Air - Space
+                                |(\s{1}|\t+)                      # 11. Air - Space
                                 |(.*)                           # 12. Invalid
                                 """, re.VERBOSE)
         # Token types of objects
@@ -104,8 +104,6 @@ class Lexer():
                     del ls[idx+1]
         except:
             pass
-        # for el in ls:
-        #     print(el)
         return ls    
         
     def peekToken(self):
@@ -116,7 +114,7 @@ class Lexer():
     
     def popToken(self):
         token = self.token_ls.pop(0)
-        if token.ofType != "Space" and token.ofType != "Invalid" and token.ofType != "EOF":
+        if token.ofType != "Space" and token.ofType != "EOF":
             self.prev = token
         return token
     

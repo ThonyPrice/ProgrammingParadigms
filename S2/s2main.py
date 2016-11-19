@@ -1,6 +1,6 @@
 # Programmeringparadigm     Lab S2 
 # Created by:               Thony Price 
-# Last revision:            2016-11-17
+# Last revision:            2016-11-19
 
 import sys
 from s2lexer import *
@@ -14,7 +14,7 @@ __GRAMMATIK__
     <exp>           ::= <instruction> | <instruction><exp> 
                         | REP SPACE VALUE SPACE <rep>
                         | REP SPACE VALUE SPACE <rep> <exp>
-    <instructtion>  ::= MOVEMENT SPACE VALUE <end>
+    <instruction>   ::= MOVEMENT SPACE VALUE <end>
                         | COLOR SPACE CVALUE <end>
                         | PENCIL <end>
     <end>           ::= DOT | SPACE DOT
@@ -24,7 +24,7 @@ __TOKENS__
 
     MOVEMENT    -> (FORW|BACK|LEFT|RIGHT)  
     PENCIL      -> (UP|DOWN)
-    COLOR       -> "COLOR"
+    COLOR       -> (COLOR)
     REP         -> (REP)
     VALUE       -> Natural number
     CVALUE      -> Color in hex format
@@ -43,10 +43,9 @@ def main():
     userInput   = userInput.lower()
     # Convert string to list of tokens
     lexer       = Lexer(userInput)
-    # Debug
     # Call parser
     sTree       = Parser(lexer).tree
-    # If sTree != None -> Syntax passed 
+    # If sTree != None -> Syntax accepted 
     if sTree != None:
         # print(sTree)
         result      = Process(sTree)
