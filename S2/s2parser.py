@@ -64,6 +64,9 @@ class Parser():
                 token.getType() == "Up" or token.getType() == "Down" or \
                 token.getType() == "Color": 
                 sTree = self.instruction(lexer) 
+            if  token.getType() == "Dot" or token.getType() == "Value" or \
+                token.getType() == "Cvalue":
+                raise SyntaxError(token.row)
             sTree.right = self.exp(lexer)  
         return sTree
     
