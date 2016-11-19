@@ -1,6 +1,6 @@
 # Programmeringparadigm     Lab S2 
 # Created by:               Thony Price 
-# Last revision:            2016-11-17
+# Last revision:            2016-11-19
 
 import re
 
@@ -52,7 +52,7 @@ class Lexer():
                                 |(\.)                           # 8. Dot
                                 |(")                            # 9. Quote
                                 |(\n)                           # 10. Newline - Space 
-                                |(\s{1}|\t+)                      # 11. Air - Space
+                                |(\s{1}|\t+)                    # 11. Air - Space
                                 |(.*)                           # 12. Invalid
                                 """, re.VERBOSE)
         # Token types of objects
@@ -91,9 +91,9 @@ class Lexer():
             if el.lastindex == 1 or el.lastindex == 10:
                 row += 1
         # The last token is always invalid, it's made from "end-of-input-char"
+        # Replace with EOF token
         del token_ls[len(token_ls)-1]
         token_ls.append(Token("EOF", 0))
-        # Remove multiple spaces
         return self.rmSpaces(token_ls)
         
     # Remove multiple following whitespaces
@@ -119,6 +119,6 @@ class Lexer():
         return token
     
     def hasNext(self):
-        if len(self.token_ls) > 0:          # 
+        if len(self.token_ls) > 0:
             return True
         return False
