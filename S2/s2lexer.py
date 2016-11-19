@@ -42,7 +42,7 @@ class Lexer():
     def tokenize(self, userInput): 
         # Regex patterns for tokens
         allTokens = re.compile  (r"""
-                                (%.*\n)                         # 1. Comment
+                                (%.*?\n)                        # 1. Comment
                                 |(forw|back|left|right)         # 2. Movement 
                                 |(up|down)                      # 3. Pencil
                                 |([1-9][0-9]*)                  # 4. Value
@@ -53,7 +53,7 @@ class Lexer():
                                 |(")                            # 9. Quote
                                 |(\n)                           # 10. Newline - Space 
                                 |(\s+|\t+)                      # 11. Air - Space
-                                |(.*?)                          # 12. Invalid
+                                |(.*)                           # 12. Invalid
                                 """, re.VERBOSE)
         # Token types of objects
         tokionary =         {   1:"Space",      2:"Movement",   3:"Pencil",       

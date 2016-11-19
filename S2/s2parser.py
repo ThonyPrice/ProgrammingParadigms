@@ -19,7 +19,7 @@ class Parser():
             # print("Formeln är syntaktiskt korrekt")
             return sTree
         except SyntaxError as error:                            
-            print("Syntaxfel pa rad", error) # 
+            print("Syntaxfel på rad", error) # 
             return None
     
     # "Top level" of parsing
@@ -31,7 +31,7 @@ class Parser():
             self.last = token
             if token.getType() == "EOF":
                 if quotes != 0:
-                    raise SyntaxError(lexer.prev.row)
+                    raise SyntaxError(lexer.prev.row)    # lexer.prev.row
                 return sTree
             if token.getType() == "Invalid":
                 raise SyntaxError(token.row)
@@ -112,14 +112,16 @@ class Parser():
             sTree.right = self.exp(lexer)
             try:
                 if not lexer.popToken() == "Quote":
-                    lexer.prev = keep
-                    raise SyntaxError(token.row)
+                    # lexer.prev = keep
+                    # print("this?")
+                    raise SyntaxError(lexer.prev.row) # token.row
             except: 
                 # quotes -= 1
                 if lexer.hasNext():
                     # sTree.right = self.exp(lexer)
                     return sTree
-                raise SyntaxError(token.row)
+                
+                raise SyntaxError(self.last.row)    #
         if token.getType() == "Rep":
             keep = lexer.popToken()
             self.last = token
