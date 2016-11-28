@@ -15,6 +15,7 @@ public class ATMServerThread extends Thread {
 
     private String readLine() throws IOException {
         String str = in.readLine();
+        // Kommentera in för att skriva ut vad som skickas på socket
         //System.out.println(""  + socket + " : " + str);
         return str;
     }
@@ -31,10 +32,12 @@ public class ATMServerThread extends Thread {
                 (new InputStreamReader(socket.getInputStream()));
 	
             String inputLine, outputLine;
-	
+	           
+            // Hårdkodat saldo -> spara på fil? 
             int balance = 1000;
             int value;
             validateUser();
+            // Skicka sträng till socket
             out.println("Welcome to Bank! (1)Balance, (2)Withdrawal, (3)Deposit, (4)Exit"); 
             inputLine = readLine();
             int choise = Integer.parseInt(inputLine);

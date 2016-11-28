@@ -6,6 +6,7 @@ import java.util.Scanner;
    @author Snilledata
 */
 public class ATMClient {
+    // Undvik hårkodning av connectionPort -> Flytta som inargument i kommandorad
     private static int connectionPort = 8989;
     
     public static void main(String[] args) throws IOException {
@@ -33,7 +34,8 @@ public class ATMClient {
             System.err.println("Couldn't open connection to " + adress);
             System.exit(1);
         }
-
+        
+        // Dessa readlines ska matcha menyfunktionen för bankomaten
         System.out.println("Contacting bank ... ");
         System.out.println(in.readLine()); 
 

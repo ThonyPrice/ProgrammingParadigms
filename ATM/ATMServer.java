@@ -5,13 +5,16 @@ import java.io.*;
    @author Viebrapadata
 */
 public class ATMServer {
-
-    private static int connectionPort = 8989;
+  
+    // Hårdkodat -> Lägg i fil eller ange port i kommandoraden
+    private static int connectionPort = 8989; 
     
+    // args -> anges i kommandoraden
     public static void main(String[] args) throws IOException {
         
         ServerSocket serverSocket = null;
        
+        // Används i System.out
         boolean listening = true;
         
         try {
@@ -23,6 +26,7 @@ public class ATMServer {
 	
         System.out.println("Bank started listening on port: " + connectionPort);
         while (listening)
+            // Starta tråd
             new ATMServerThread(serverSocket.accept()).start();
 
         serverSocket.close();
