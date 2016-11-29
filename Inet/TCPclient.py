@@ -8,12 +8,12 @@ def Main():
     s       = socket.socket()
     s.connect((host, port))       # Connect to server
     
-    message = input("-> ")          # Let user make input
+    message = ">>>"
     while message != 'q':           # q == quit
-        s.send(message)             # Send message to server
         data = s.recv(1024)         # Recive data from server 
         print("Recived from server", str(data))
-        message = input("-> ")          # Let user make input
+        message = str(input(">>>")) # Let user make input
+        s.send(message)             # Send message to server
     
     s.close()
     

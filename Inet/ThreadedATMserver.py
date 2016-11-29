@@ -28,7 +28,9 @@ class ThreadedServer(object):
         size = 1024
         while True:
             try:
+                client.send("Enter card number")
                 data = client.recv(size)
+                getClient(data)
                 if data:
                     # Set the response to echo back the recieved data 
                     response = data.upper()
