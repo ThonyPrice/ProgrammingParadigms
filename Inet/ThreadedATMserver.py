@@ -39,6 +39,6 @@ class ThreadedServer(object):
                 client.close()
                 return False
 
-if __name__ == "__main__":
-    port_num = input("Port? ")
-    ThreadedServer('127.0.0.1',port_num).listen()
+# if __name__ == "__main__":
+#     port_num = input("Port? ")
+#     ThreadedServer('127.0.0.1',port_num).listen()
