@@ -4,7 +4,7 @@
 
 # This file should be used to launch the ATM server and start listening
 # for connections. When a connection is found a ServerThread is created.
-# This is where the server GUI should be implemented. (TO-DO)
+# This is where the server GUI is implemented.
 
 import socket
 import threading
@@ -28,17 +28,34 @@ class ThreadedServer(object):
             threading.Thread(target = self.mkServerThread, args = (client,address)).start()
             
     def mkServerThread(self, client, address):
+        threading.Thread(target = self.mkOpsThread, args = ()).start()
         ServerThread(client, address).listenToClient()
-        
-def setup_host():
     
+    def mkOpsThread(self):
+        while True:
+            var = input("Adjust advertisement? Press [y/n] anytime:\n")
+            if var == 'y':
+                print("Yey!")
+
+    # Switch the advertisement
+    def swAd(self):
+        while True:
+            slct = (input("(S) Svenska | (E) English: ")).lower()
+            if slct == 's' or slct == 'e':
+                break
+        new_ad  = input("Please enter new advertisement:\n>>>")
+        if slct == 's':
+        with open(os.path.join("files", "ad_swe.txt"), "w") as f:
+            f.write(new_ad)
+        if slct == 'e':
+        with open(os.path.join("files", "ad_eng.txt"), "w") as f:
+            f.write(new_ad)
+            
+def Main():
     print("--- Server interface ---\n")
     # port    = int(input("Please enter a port: "))
     print("Waiting for connections...")
     ThreadedServer('localhost', 5000).listen()
-
-def Main():
-    setup_host()
 
 if __name__ == "__main__":
     Main()

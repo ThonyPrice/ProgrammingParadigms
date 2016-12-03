@@ -23,7 +23,6 @@ class ServerThread(object):
         while True:
             try:
 
-                # Recive client language request
                 slct_lang = self.recive()
                 if slct_lang == 's':
                     print("Client choose Swedish")
@@ -178,6 +177,10 @@ class ServerThread(object):
                 return
             if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
                 self.send("Ogiltigt val, testa igen")
+
+    def exitOrNotSwe(self):
+        self.send("(1) Avsluta session | (2) Byt sprak: ")
+        return int(self.recive())
     
     # Send ad to client
     def pushAdSwe(self):
