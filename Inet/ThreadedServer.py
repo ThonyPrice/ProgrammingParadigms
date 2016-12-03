@@ -33,8 +33,9 @@ class ThreadedServer(object):
 def setup_host():
     
     print("--- Server interface ---\n")
-    port    = int(input("Please enter a port: "))
-    ThreadedServer('localhost', port).listen()
+    # port    = int(input("Please enter a port: "))
+    print("Waiting for connections...")
+    ThreadedServer('localhost', 5000).listen()
 
 def Main():
     setup_host()
