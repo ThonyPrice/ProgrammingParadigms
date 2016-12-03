@@ -22,37 +22,26 @@ class ServerThread(object):
     def listenToClient(self):
         while True:
             try:
-                # Send advertisement
-                self.pushAd()           
-                
+
                 # Recive client language request
                 slct_lang = self.recive()
                 if slct_lang == 's':
                     print("Client choose Swedish")
                     userInfo = self.logInSwe()
-                    print("call main")
                     self.mainMenuSwe(userInfo)
-                    self.exitOrNotSwe()
+                    var = self.exitOrNotSwe()
+                    
                 if slct_lang == 'e':
                     print("Client choose English")
                     userInfo = self.logInEng()
-                    print("call main")
                     self.mainMenuEng(userInfo)
-                    self.exitOrNotEng()
+                    var = self.exitOrNotEng()
                 
-                print("Not here..!")    
-
-                print("END")
+                if var == 1:
+                    self.client.close()
                 
-                # if data:
-                #     # Set the response to echo back the recieved data 
-                #     response = data.upper()
-                #     self.client.sendto(response.encode('utf-8'), ('localhost', 5000))
-                # else:
-                #     raise error('Client disconnected')
-            
             except:
-                print("Exception caught!")
+                print(self.address, "closed it's session")
                 self.client.close()
                 return False
     
@@ -75,6 +64,7 @@ class ServerThread(object):
     def mainMenuEng(self, userInfo):
         self.send("~~~ Welcome to JvA bank! ~~~")
         while True:
+            self.pushAdEng()
             self.send("(1)Balance (2)Withdrawal (3)Deposit (4)Exit")
             menuOp = self.recive()
             if menuOp == '1':
@@ -101,6 +91,16 @@ class ServerThread(object):
             if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
                 self.send("Invalid option, try again")
 
+    def exitOrNotEng(self):
+        self.send("(1) End session | (2) Change language: ")
+        return int(self.recive())
+        
+    # Send ad to client
+    def pushAdEng(self):
+        with open(os.path.join("advertisement", "ad_eng.txt"), "r") as f:
+            for line in f:
+                self.send(line)
+
     # Recive message from client
     def recive(self):
         data = ''
@@ -115,13 +115,6 @@ class ServerThread(object):
     # Send message to cliend
     def send(self, msg):
         self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))
-    
-    # Send ad to client
-    def pushAd(self):
-        with open(os.path.join("advertisement", "ad.txt"), "r") as f:
-            for line in f:
-                self.send(line)
-            print("Ad sent to client")
     
     def mkClients(self):
         users = []
@@ -186,9 +179,8 @@ class ServerThread(object):
             if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
                 self.send("Ogiltigt val, testa igen")
     
-
-                
-
-    
-    
-                
+    # Send ad to client
+    def pushAdSwe(self):
+        with open(os.path.join("advertisement", "ad_swe.txt"), "r") as f:
+            for line in f:
+                self.send(line)

@@ -12,13 +12,9 @@ class TCPclient(object):
         self.s.connect((self.host, self.port))
         while True:
             
-            # Recive advertisement
-            data = self.recive()            
-            print("Recived:", data)
-            
             # Send language request
             while True:                     
-                pick = input("(S) Svenska | (E) English: ")
+                pick = (input("(S) Svenska | (E) English: ")).lower()
                 if pick == 's' or pick == 'e':
                     self.send(pick)
                     break
@@ -37,6 +33,7 @@ class TCPclient(object):
             # Main menu
             print(self.recive())                    # Greeting
             while True:
+                print(self.recive())                # Advertisement
                 print(self.recive())                # Options
                 menuOp = input(": ")
                 self.send(menuOp)                   # Send op
@@ -55,16 +52,19 @@ class TCPclient(object):
                 if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
                     print(self.recive())
             
-            # Exit or restart        
-            print("END")
-                
-            message = str(input(">>> "))    # Let user make input
-            print("Send...")
-            self.s.sendto(message.encode('utf-8'), ('localhost', 5000))            # Send message to server
-            data = self.recive()
-            print("Recived from server", data)
-        
-        s.close()
+            # Close client or start over
+            ops = self.recive()
+            while True:
+                print(ops, end="")
+                slct = input()
+                if slct == '1' or slct == '2':
+                    self.send(slct)
+                    break
+                   
+            if slct == '1':
+                return
+            elif slct == '2':
+                pass
 
     def recive(self):
         data = ''
