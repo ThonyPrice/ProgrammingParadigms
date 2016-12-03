@@ -33,6 +33,29 @@ class TCPclient(object):
                 if verification == 'True':
                     break
                 print("Invalid, try again")
+            
+            # Main menu
+            print(self.recive())
+            while True:
+                menuOp = input(">>> ")
+                self.send(menuOp)
+                if menuOp == '1': 
+                    print(self.recive())
+                    print(self.recive())
+                if menuOp == '2' or menuOp == '3':
+                    print(self.recive())
+                    amount = input(">>> ")
+                    self.send(amount)
+                    if menuOp == '2':
+                        print(self.recive()) # Enter PIN
+                        pinCode = input(">>> ")
+                        self.send(pinCode)
+                    
+                if menuOp == '4':
+                    break
+                if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
+                    print("Invalid, try again")
+                    
             print("END")
                 
             message = str(input(">>> "))    # Let user make input
