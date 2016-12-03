@@ -19,24 +19,13 @@ class ServerThread(object):
         size = 1024
         while True:
             try:
-                # msg = self.recive()
-                data = ''
-                while True:
-                    chunk = self.client.recv(self.size).decode('utf-8')
-                    print("Chunk:", chunk)
-                    data += chunk
-                    if len(chunk) != self.size:
-                        break
-                print("This...")
+                data = self.recive()
                 print("Recived from:", self.address,":", data)
-                print("That.")
                 # getClient(data)
                 if data:
                     # Set the response to echo back the recieved data 
                     response = data.upper()
-                    print("Ja")
                     self.client.sendto(response.encode('utf-8'), ('localhost', 5000))
-                    print("Nej")
                 else:
                     raise error('Client disconnected')
             except:
@@ -48,8 +37,8 @@ class ServerThread(object):
         data = ''
         while True:
             chunk = self.client.recv(self.size).decode('utf-8')
-            print("Chunk:", chunk)
-            if len(chunk) == 0:
-                break
+            # print("Chunk:", chunk)
             data += chunk
+            if len(chunk) != self.size:
+                break
         return data
