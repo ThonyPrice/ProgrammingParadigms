@@ -1,28 +1,60 @@
 import socket
 
-def Main():
-    host    = '127.0.0.1'
-    print("--- Client interface ---\n")
-    # port    = int(input("Please enter a port: "))
-    size    = 10
+class TCPclient(object):
     
-    s       = socket.socket()
-    s.connect((host, 5000))       # Connect to server
-    
-    message = ">>>"
-    while message != 'q':               # q == quit
-        message = str(input(">>> "))    # Let user make input
-        s.sendto(message.encode('utf-8'), ('localhost', 5000))            # Send message to server
+    def __init__ (self):
+        self.host   = 'localhost'
+        self.port   = 5000
+        self.size   = 10
+        self.s      = socket.socket()
+
+    def talk(self):
+        self.s.connect((self.host, self.port))
+        while True:
+            
+            # Recive advertisement
+            data = self.recive()            
+            print("Recived:", data)
+            
+            # Send language request
+            while True:                     
+                pick = input("Enter 's' for Swedish or 'e' for English: ")
+                if pick == 's' or pick == 'e':
+                    self.send(pick)
+                    break
+            
+            # Log in process
+            while True:
+                cardNr = input("Enter your card number, 4 digits: ")
+                self.send(cardNr)
+                logIn = input("Enter your passcode, 4 digits: ")
+                self.send(logIn)
+            print("END")
+                
+            message = str(input(">>> "))    # Let user make input
+            print("Send...")
+            self.s.sendto(message.encode('utf-8'), ('localhost', 5000))            # Send message to server
+            data = self.recive()
+            print("Recived from server", data)
+        
+        s.close()
+
+    def recive(self):
         data = ''
         while True:
-            chunk = s.recv(size).decode('utf-8')
-            print("Chunk:", chunk)
+            chunk = self.s.recv(self.size).decode('utf-8')
+            # print("Chunk:", chunk)
             data += chunk
-            if len(chunk) != size:
+            if len(chunk) != self.size:
                 break
-        print("Recived from server", data)
-    
-    s.close()
+        return data
+
+    def send(self, msg):
+        self.s.sendto(msg.encode('utf-8'), (self.host, self.port))
+
+def Main():
+    print("--- Client interface ---\n")
+    TCPclient().talk()
     
 if __name__ == '__main__':
     Main()

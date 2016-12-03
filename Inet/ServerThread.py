@@ -6,6 +6,8 @@
 # Each connection created a ServerThread object 
 # The object handles all communication with the client
 
+import os
+import glob
 import socket
 
 class ServerThread(object):
@@ -14,14 +16,26 @@ class ServerThread(object):
         self.client = client
         self.address= address
         self.size   = 10
+        self.users  = self.mkClients()
 
     def listenToClient(self):
-        size = 1024
         while True:
             try:
-                data = self.recive()
-                print("Recived from:", self.address,":", data)
-                # getClient(data)
+                # Send advertisement
+                self.pushAd()           
+                
+                # Recive client language request
+                slct_lang = self.recive()
+                if slct_lang == 's':
+                    print("Client chose Swedish")
+                    
+                    # Get clients logIn info
+                    cardNr = self.recive()
+                    logIn = self.recive()
+                    print("Calls verify...")
+                    userInfo = self.verify(cardNr, logIn)
+                    
+                    print("END")
                 if data:
                     # Set the response to echo back the recieved data 
                     response = data.upper()
@@ -33,6 +47,7 @@ class ServerThread(object):
                 self.client.close()
                 return False
     
+    # Recive message from client
     def recive(self):
         data = ''
         while True:
@@ -42,3 +57,30 @@ class ServerThread(object):
             if len(chunk) != self.size:
                 break
         return data
+    
+    # Send message to cliend
+    def send(self, msg):
+        self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))
+    
+    # Send ad to client
+    def pushAd(self):
+        with open(os.path.join("advertisement", "ad.txt"), "r") as f:
+            for line in f:
+                self.send(line)
+            print("Ad sent to client")
+    
+    def mkClients(self):
+        for filename in glob.glob(os.path.join("clients", '*.txt')):
+            info = []
+            with open(filename, "r", encoding = "utf-8") as f:
+                for line in f:
+                    info.append(line.strip('\n'))
+                print("Card:", info[0])
+                print("Code:", info[1])
+                print("Pin:", info[2:])
+            
+    def verify(self, cardNr, logIn):
+        pass
+                
+                
+                
