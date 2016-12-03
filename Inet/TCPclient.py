@@ -13,7 +13,7 @@ def Main():
         data = s.recv(1024)         # Recive data from server 
         print("Recived from server", str(data))
         message = str(input(">>>")) # Let user make input
-        s.send(message)             # Send message to server
+        s.send(str(message))             # Send message to server
     
     s.close()
     
