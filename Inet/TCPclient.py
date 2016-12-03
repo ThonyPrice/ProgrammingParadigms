@@ -9,11 +9,11 @@ def Main():
     s.connect((host, port))       # Connect to server
     
     message = ">>>"
-    while message != 'q':           # q == quit
-        data = s.recv(1024)         # Recive data from server 
-        print("Recived from server", str(data))
-        message = str(input(">>>")) # Let user make input
-        s.send(str(message))             # Send message to server
+    while message != 'q':               # q == quit
+        message = str(input(">>> "))    # Let user make input
+        s.sendto(message.encode('utf-8'), ('localhost', 5000))            # Send message to server
+        data = s.recv(1024)             # Recive data from server 
+        print("Recived from server", data.decode('utf-8'))
     
     s.close()
     
