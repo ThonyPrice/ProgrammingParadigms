@@ -6,6 +6,7 @@
 # for connections. When a connection is found a ServerThread is created.
 # This is where the server GUI is implemented.
 
+import os
 import socket
 import threading
 from ServerThread import ServerThread
@@ -35,7 +36,7 @@ class ThreadedServer(object):
         while True:
             var = input("Adjust advertisement? Press [y/n] anytime:\n")
             if var == 'y':
-                print("Yey!")
+                self.swAd()
 
     # Switch the advertisement
     def swAd(self):
@@ -45,12 +46,13 @@ class ThreadedServer(object):
                 break
         new_ad  = input("Please enter new advertisement:\n>>>")
         if slct == 's':
-        with open(os.path.join("files", "ad_swe.txt"), "w") as f:
-            f.write(new_ad)
+            with open(os.path.join("advertisement", "ad_swe.txt"), "w") as f:
+                f.write(new_ad)
         if slct == 'e':
-        with open(os.path.join("files", "ad_eng.txt"), "w") as f:
-            f.write(new_ad)
-            
+            with open(os.path.join("advertisement", "ad_eng.txt"), "w") as f:
+                f.write(new_ad)
+        print("Advertisement succesfully changed")
+        
 def Main():
     print("--- Server interface ---\n")
     # port    = int(input("Please enter a port: "))
