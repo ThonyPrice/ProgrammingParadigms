@@ -9,31 +9,7 @@
 import os
 import glob
 import socket
-
-# A User oject represents all information for a customer in the bank
-class User(object):
-    def __init__(self, cardNr, logIn, balance, pins):
-        self.cardNr = cardNr
-        self.logIn  = logIn
-        self.balance= balance
-        self.pins   = pins
-    
-    def updateBalance(self, amount):
-        tmp = int(self.balance)
-        tmp1= tmp + amount
-        self.balance = str(tmp1)
-        name = self.cardNr + ".txt"
-        with open(os.path.join("clients", name), "r") as f:
-            data = f.readlines()
-        data[2] = str(tmp1) + '\n'
-        with open(os.path.join("clients", name), "w") as f:
-            f.writelines( data )
-        
-    def verifyPin(self, pinCode):
-        for pin in self.pins:
-            if pin == pinCode:
-                return True
-        return False
+from Users import User
 
 class ServerThread(object):
     
@@ -52,60 +28,79 @@ class ServerThread(object):
                 # Recive client language request
                 slct_lang = self.recive()
                 if slct_lang == 's':
-                    print("Client chose Swedish")
-                    
-                    # Get clients logIn info
-                    while True:
-                        cardNr = self.recive()
-                        logIn = self.recive()
-                        print("Calls verify...")
-                        userInfo = self.verify(cardNr, logIn)
-                        if userInfo != 'False':
-                            self.send('True')
-                            break
-                        print("User entered invalid information")
-                        self.send('False')
-                    
-                    # Main menu
-                    msg = "Welcome to bank\n(1)Balance, (2)Withdrawal, (3)Deposit, (4)Exit"
-                    self.send(msg)
-                    while True:
-                        menuOp = self.recive()
-                        if menuOp == '1':
-                            self.send(userInfo.balance)
-                            self.send(msg) 
-                        if menuOp == '2' or menuOp == '3':
-                            self.send("Enter amount:")
-                            amount = int(self.recive())
-                            if menuOp == '2':
-                                self.send("Enter your PIN:")
-                                amount  = amount * -1
-                                pin     = self.recive()
-                                print("Recived pin:", pin)
-                                if userInfo.verifyPin(pin): 
-                                    print("verified")                               
-                                    userInfo.updateBalance(amount)
-                                else:
-                                    print("Invalid PIN")
-                            if menuOp == '3':
-                                userInfo.updateBalance(amount)    
-                        if menuOp == '4':
-                            break
-                        if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
-                            print("Invalid, try again")
-                    
-                    print("END")
-                if data:
-                    # Set the response to echo back the recieved data 
-                    response = data.upper()
-                    self.client.sendto(response.encode('utf-8'), ('localhost', 5000))
-                else:
-                    raise error('Client disconnected')
+                    print("Client choose Swedish")
+                    userInfo = self.logInSwe()
+                    print("call main")
+                    self.mainMenuSwe(userInfo)
+                    self.exitOrNotSwe()
+                if slct_lang == 'e':
+                    print("Client choose English")
+                    userInfo = self.logInEng()
+                    print("call main")
+                    self.mainMenuEng(userInfo)
+                    self.exitOrNotEng()
+                
+                print("Not here..!")    
+
+                print("END")
+                
+                # if data:
+                #     # Set the response to echo back the recieved data 
+                #     response = data.upper()
+                #     self.client.sendto(response.encode('utf-8'), ('localhost', 5000))
+                # else:
+                #     raise error('Client disconnected')
+            
             except:
                 print("Exception caught!")
                 self.client.close()
                 return False
     
+    # Get users logIn info and verify. If info is correct
+    # an object with users details is returned
+    def logInEng(self):
+        while True:
+            self.send("Please enter card number, 4 digits: ")
+            cardNr = self.recive()
+            self.send("Please enter Pin code, 4 digits: ")
+            logIn = self.recive()
+            userInfo = self.verify(cardNr, logIn)
+            if userInfo != 'False':
+                self.send('True')
+                return userInfo
+            print("User entered invalid information")
+            self.send('False')
+        return userInfo
+    
+    def mainMenuEng(self, userInfo):
+        self.send("~~~ Welcome to JvA bank! ~~~")
+        while True:
+            self.send("(1)Balance (2)Withdrawal (3)Deposit (4)Exit")
+            menuOp = self.recive()
+            if menuOp == '1':
+                self.send(userInfo.balance)
+            if menuOp == '2' or menuOp == '3':
+                self.send("Enter amount: ")
+                amount = int(self.recive())
+                if menuOp == '2':
+                    self.send("Enter your PIN: ")
+                    amount  = amount * -1
+                    pin     = self.recive()
+                    print("Recived pin:", pin)
+                    if userInfo.verifyPin(pin): 
+                        print("verified")
+                        self.send("PIN correct")                               
+                        userInfo.updateBalance(amount)
+                    else:
+                        self.send("PIN incorrect") 
+                        print("Invalid PIN")
+                if menuOp == '3':
+                    userInfo.updateBalance(amount)    
+            if menuOp == '4':
+                return
+            if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
+                self.send("Invalid option, try again")
+
     # Recive message from client
     def recive(self):
         data = ''
@@ -137,14 +132,61 @@ class ServerThread(object):
                     info.append(line.strip('\n'))
                 users.append(User(info[0], info[1], info[2], info[3:]))
         return users
-        
+    
+    # Search users for anyone with given logIn credentials 
     def verify(self, cardNr, logIn):
         for user in self.users:
             if user.cardNr == cardNr and user.logIn == logIn:
-                print("Verify True")
                 return user
-        print("Verify false")
         return 'False'
+
+###############################################################################
+# Menus translated to Swedish    
+
+    def logInSwe(self):
+        while True:
+            self.send("Ange kortnr, 4 siffror: ")
+            cardNr = self.recive()
+            self.send("Ange pinkod, 4 siffror: ")
+            logIn = self.recive()
+            userInfo = self.verify(cardNr, logIn)
+            if userInfo != 'False':
+                self.send('True')
+                break
+            print("User entered invalid information")
+            self.send('False')
+        return userInfo
+        
+    def mainMenuSwe(self, userInfo):
+        self.send("~~~ Valkommen till JvA bank! ~~~")
+        while True:
+            self.send("(1)Saldo (2)Uttag (3)Insattning (4)Avsluta")
+            menuOp = self.recive()
+            if menuOp == '1':
+                self.send(userInfo.balance)
+            if menuOp == '2' or menuOp == '3':
+                self.send("Ange belopp: ")
+                amount = int(self.recive())
+                if menuOp == '2':
+                    self.send("Ange pinkod: ")
+                    amount  = amount * -1
+                    pin     = self.recive()
+                    print("Recived pin:", pin)
+                    if userInfo.verifyPin(pin): 
+                        print("verified")
+                        self.send("PIN korrekt")                               
+                        userInfo.updateBalance(amount)
+                    else:
+                        self.send("PIN inkorrekt") 
+                        print("Invalid PIN")
+                if menuOp == '3':
+                    userInfo.updateBalance(amount)    
+            if menuOp == '4':
+                return
+            if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
+                self.send("Ogiltigt val, testa igen")
+    
+
                 
 
     

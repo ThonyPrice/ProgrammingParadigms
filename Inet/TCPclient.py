@@ -18,44 +18,44 @@ class TCPclient(object):
             
             # Send language request
             while True:                     
-                pick = input("Enter 's' for Swedish or 'e' for English: ")
+                pick = input("(S) Svenska | (E) English: ")
                 if pick == 's' or pick == 'e':
                     self.send(pick)
                     break
             
             # Log in process
             while True:
-                cardNr = input("Enter your card number, 4 digits: ")
-                self.send(cardNr)
-                logIn = input("Enter your passcode, 4 digits: ")
-                self.send(logIn)
-                verification = self.recive()
+                print(self.recive(), end="")        # "Enter cardNr"
+                self.send(input())                  # Input and send
+                print(self.recive(), end="")        # "Enter pinCode"
+                self.send(input())                  # Input and send
+                verification = self.recive()        # Server verification
                 if verification == 'True':
                     break
-                print("Invalid, try again")
-            
+                print("Error")
+
             # Main menu
-            print(self.recive())
+            print(self.recive())                    # Greeting
             while True:
-                menuOp = input(">>> ")
-                self.send(menuOp)
-                if menuOp == '1': 
+                print(self.recive())                # Options
+                menuOp = input(": ")
+                self.send(menuOp)                   # Send op
+                
+                if menuOp == '1':                   # Balance
                     print(self.recive())
-                    print(self.recive())
-                if menuOp == '2' or menuOp == '3':
-                    print(self.recive())
-                    amount = input(">>> ")
-                    self.send(amount)
+                if menuOp == '2' or menuOp == '3':  # Withdrawal/deposit
+                    print(self.recive(), end="")
+                    self.send(input())
                     if menuOp == '2':
-                        print(self.recive()) # Enter PIN
-                        pinCode = input(">>> ")
-                        self.send(pinCode)
-                    
+                        print(self.recive(), end="") # Enter PIN (withdraw)
+                        self.send(input())
+                        print(self.recive())
                 if menuOp == '4':
                     break
                 if menuOp != '1' and menuOp != '2' and menuOp != '3' and menuOp != '4':
-                    print("Invalid, try again")
-                    
+                    print(self.recive())
+            
+            # Exit or restart        
             print("END")
                 
             message = str(input(">>> "))    # Let user make input
