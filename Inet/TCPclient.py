@@ -29,6 +29,10 @@ class TCPclient(object):
                 self.send(cardNr)
                 logIn = input("Enter your passcode, 4 digits: ")
                 self.send(logIn)
+                verification = self.recive()
+                if verification == 'True':
+                    break
+                print("Invalid, try again")
             print("END")
                 
             message = str(input(">>> "))    # Let user make input

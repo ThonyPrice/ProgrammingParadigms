@@ -10,6 +10,14 @@ import os
 import glob
 import socket
 
+# A User oject represents all information for a customer in the bank
+class User(object):
+    def __init__(self, cardNr, logIn, balance, pins):
+        self.cardNr = cardNr
+        self.logIn  = logIn
+        self.balance= balance
+        self.pins   = pins
+
 class ServerThread(object):
     
     def __init__(self, client, address):
@@ -30,10 +38,16 @@ class ServerThread(object):
                     print("Client chose Swedish")
                     
                     # Get clients logIn info
-                    cardNr = self.recive()
-                    logIn = self.recive()
-                    print("Calls verify...")
-                    userInfo = self.verify(cardNr, logIn)
+                    while True:
+                        cardNr = self.recive()
+                        logIn = self.recive()
+                        print("Calls verify...")
+                        userInfo = self.verify(cardNr, logIn)
+                        if userInfo != 'False':
+                            self.send('True')
+                            break
+                        print("User entered invalid information")
+                        self.send('False')
                     
                     print("END")
                 if data:
@@ -70,17 +84,24 @@ class ServerThread(object):
             print("Ad sent to client")
     
     def mkClients(self):
+        users = []
         for filename in glob.glob(os.path.join("clients", '*.txt')):
             info = []
             with open(filename, "r", encoding = "utf-8") as f:
                 for line in f:
                     info.append(line.strip('\n'))
-                print("Card:", info[0])
-                print("Code:", info[1])
-                print("Pin:", info[2:])
-            
+                users.append(User(info[0], info[1], info[3], info[4:]))
+        return users
+        
     def verify(self, cardNr, logIn):
-        pass
+        for user in self.users:
+            if user.cardNr == cardNr and user.logIn == logIn:
+                print("Verify True")
+                return user
+        print("Verify false")
+        return 'False'
                 
-                
+
+    
+    
                 
