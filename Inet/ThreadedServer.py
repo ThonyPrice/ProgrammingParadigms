@@ -29,7 +29,7 @@ class ThreadedServer(object):
             threading.Thread(target = self.mkServerThread, args = (client,address)).start()
             
     def mkServerThread(self, client, address):
-        threading.Thread(target = self.mkOpsThread, args = ()).start()
+        # threading.Thread(target = self.mkOpsThread, args = ()).start()
         ServerThread(client, address).listenToClient()
     
     def mkOpsThread(self):

@@ -63,6 +63,7 @@ class ServerThread(object):
     def mainMenuEng(self, userInfo):
         self.send("~~~ Welcome to JvA bank! ~~~")
         while True:
+            self.mkClients()
             self.pushAdEng()
             self.send("(1)Balance (2)Withdrawal (3)Deposit (4)Exit")
             menuOp = self.recive()
@@ -107,13 +108,21 @@ class ServerThread(object):
             chunk = self.client.recv(self.size).decode('utf-8')
             # print("Chunk:", chunk)
             data += chunk
-            if len(chunk) != self.size:
+            if '¶' in chunk:
                 break
-        return data
+        return data[0:len(data)-1]
     
     # Send message to cliend
     def send(self, msg):
-        self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))
+        msg += '¶'
+        while len(msg) > self.size: 
+            chunk = msg[0:self.size]
+            self.client.sendto(chunk.encode('utf-8'), ('localhost', 5000))
+            msg = msg[self.size:] 
+        if len(msg) == self.size:
+            self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))  
+        elif len(msg) > 0:
+            self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))  
     
     def mkClients(self):
         users = []
@@ -152,6 +161,8 @@ class ServerThread(object):
     def mainMenuSwe(self, userInfo):
         self.send("~~~ Valkommen till JvA bank! ~~~")
         while True:
+            self.mkClients()
+            self.pushAdSwe()
             self.send("(1)Saldo (2)Uttag (3)Insattning (4)Avsluta")
             menuOp = self.recive()
             if menuOp == '1':

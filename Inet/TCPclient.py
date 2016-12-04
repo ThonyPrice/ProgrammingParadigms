@@ -70,15 +70,24 @@ class TCPclient(object):
         data = ''
         while True:
             chunk = self.s.recv(self.size).decode('utf-8')
-            # print("Chunk:", chunk)
             data += chunk
-            if len(chunk) != self.size:
+            if '¶' in chunk:
                 break
-        return data
+        return data[0:len(data)-1]
 
     def send(self, msg):
-        self.s.sendto(msg.encode('utf-8'), (self.host, self.port))
-
+        msg += '¶'
+        while len(msg) > self.size: 
+            chunk = msg[0:self.size]
+            print("Sent", chunk)
+            self.s.sendto(chunk.encode('utf-8'), (self.host, self.port))
+            msg = msg[self.size:] 
+        if len(msg) == self.size:
+            self.s.sendto(msg.encode('utf-8'), (self.host, self.port))
+        elif len(msg) > 0:
+            self.s.sendto(msg.encode('utf-8'), (self.host, self.port))
+        print("eof")
+        
 def Main():
     print("--- Client interface ---\n")
     TCPclient().talk()
