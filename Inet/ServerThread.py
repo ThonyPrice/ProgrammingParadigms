@@ -1,9 +1,9 @@
 # Programmeringparadigm     Lab Inet 
 # Created by:               Thony Price 
-# Last revision:            2016-12-03
+# Last revision:            2016-12-05
 
 # This file is launched when ThreadedServer finds a new connection
-# Each connection created a ServerThread object 
+# Each connection createds a ServerThread object 
 # The object handles all communication with the client
 
 import os
@@ -13,16 +13,19 @@ from Users import User
 
 class ServerThread(object):
     
+    # Define client including max byte size for data transmissions
     def __init__(self, client, address):
         self.client = client
         self.address= address
         self.size   = 10
         self.users  = self.mkClients()
 
+    # Initial communication w client, depending on language selection client 
+    # to menu in that language. Also handles closing of connection
     def listenToClient(self):
         while True:
             try:
-
+                
                 slct_lang = self.recive()
                 if slct_lang == 's':
                     print("Client choose Swedish")
@@ -41,7 +44,6 @@ class ServerThread(object):
                 
             except:
                 print(self.address, "closed it's session")
-                self.client.close()
                 return False
     
     # Get users logIn info and verify. If info is correct
@@ -56,16 +58,18 @@ class ServerThread(object):
             if userInfo != 'False':
                 self.send('True')
                 return userInfo
-            print("User entered invalid information")
+            print("Alert! User entered invalid information")
             self.send('False')
         return userInfo
     
+    # Main menu. If client doesn't select exit/language option keeps looping.
+    # Observe that depending on client selection send/recive behaves differently
     def mainMenuEng(self, userInfo):
         self.send("~~~ Welcome to JvA bank! ~~~")
         while True:
             self.mkClients()
             self.pushAdEng()
-            self.send("(1)Balance (2)Withdrawal (3)Deposit (4)Exit")
+            self.send("(1)Balance (2)Withdrawal (3)Deposit (4)Exit/Lang")
             menuOp = self.recive()
             if menuOp == '1':
                 self.send(userInfo.balance)
@@ -101,20 +105,23 @@ class ServerThread(object):
             for line in f:
                 self.send(line)
 
-    # Recive message from client
+    # Recive message from client. The method recv uses the parameter self.size
+    # which recives incoming messages to set bytesize. The message is decoded
+    # from bitencoding (python standard) to UTF-8. All "chunks" adds up
+    # to a complete message. X is used as EOF for messages
     def recive(self):
         data = ''
         while True:
             chunk = self.client.recv(self.size).decode('utf-8')
-            # print("Chunk:", chunk)
             data += chunk
-            if '¶' in chunk:
+            if 'X' in chunk:
                 break
         return data[0:len(data)-1]
     
-    # Send message to cliend
+    # Send message to cliend. Chop the message into "chunks" of at most 10
+    # chars (10 bytes). Keep sending packages until all is sent.
     def send(self, msg):
-        msg += '¶'
+        msg += 'X'
         while len(msg) > self.size: 
             chunk = msg[0:self.size]
             self.client.sendto(chunk.encode('utf-8'), ('localhost', 5000))
@@ -124,6 +131,9 @@ class ServerThread(object):
         elif len(msg) > 0:
             self.client.sendto(msg.encode('utf-8'), ('localhost', 5000))  
     
+    # Open all client files in directory "clients". Make User objects 
+    # that contains each customer in the banks cardNr, logIn, balance
+    #  and pins. 
     def mkClients(self):
         users = []
         for filename in glob.glob(os.path.join("clients", '*.txt')):
@@ -154,7 +164,7 @@ class ServerThread(object):
             if userInfo != 'False':
                 self.send('True')
                 break
-            print("User entered invalid information")
+            print("Alert! User entered invalid information")
             self.send('False')
         return userInfo
         
@@ -163,7 +173,7 @@ class ServerThread(object):
         while True:
             self.mkClients()
             self.pushAdSwe()
-            self.send("(1)Saldo (2)Uttag (3)Insattning (4)Avsluta")
+            self.send("(1)Saldo (2)Uttag (3)Insattning (4)Avsluta/Sprak")
             menuOp = self.recive()
             if menuOp == '1':
                 self.send(userInfo.balance)

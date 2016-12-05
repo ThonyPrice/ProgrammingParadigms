@@ -1,17 +1,18 @@
 # Programmeringparadigm     Lab Inet 
 # Created by:               Thony Price 
-# Last revision:            2016-12-03
+# Last revision:            2016-12-05
 
-# This file should be used to launch the ATM server and start listening
-# for connections. When a connection is found a ServerThread is created.
-# This is where the server GUI is implemented.
+# This file should be used to launch the ATM server. Server GUI initializes
+# one thread listening for connections and one thread where server admin
+# can change the advertisement
 
 import os
 import socket
 import threading
 from ServerThread import ServerThread
 
-class ThreadedServer(object):
+# This class initializes a socket and starts listening for connections
+class ThreadedServer(threading.Thread):
     
     def __init__(self, host, port):
         self.host = host
@@ -19,26 +20,36 @@ class ThreadedServer(object):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
-
+        self.listen()
+    
+    # If a connection is found, make a ServerThread it
     def listen(self):
+        print("Waiting for connections...")
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
             print("Connected to:", address)
             client.settimeout(120)
-            threading.Thread(target = self.mkServerThread, args = (client,address)).start()
-            
-    def mkServerThread(self, client, address):
-        # threading.Thread(target = self.mkOpsThread, args = ()).start()
-        ServerThread(client, address).listenToClient()
+            threading.Thread(target =   ServerThread(client, address). \
+                                        listenToClient, args = ()).start()
+
+# Make one thread listening for connections (ThreadedServer) and 
+# one thread that handles the server administration
+class ServerGUI(threading.Thread):
     
+    def __init__(self):
+        self.listen = threading.Thread( target = ThreadedServer, \
+                                        args = ('localhost', 5000)).start()
+        threading.Thread(target = self.mkOpsThread(), args = ()).start()
+    
+    # Present option of changing ads 
     def mkOpsThread(self):
         while True:
-            var = input("Adjust advertisement? Press [y/n] anytime:\n")
+            var = input("Adjust advertisement? Press [y/n] anytime...\n")
             if var == 'y':
                 self.swAd()
 
-    # Switch the advertisement
+    # Adjust the ad file kept in directory "advertisements"   
     def swAd(self):
         while True:
             slct = (input("(S) Svenska | (E) English: ")).lower()
@@ -55,10 +66,7 @@ class ThreadedServer(object):
         
 def Main():
     print("--- Server interface ---\n")
-    # port    = int(input("Please enter a port: "))
-    print("Waiting for connections...")
-    ThreadedServer('localhost', 5000).listen()
+    ServerGUI()
 
 if __name__ == "__main__":
     Main()
-
